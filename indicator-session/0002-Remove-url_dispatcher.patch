@@ -1,9 +1,6 @@
-#Maintainer: Michael Healy <horsemanoffaith@gmail.com>
-#Date: November 8th, 2015 0115
-#Removing URL Dispatcher from build
-
---- a/CMakeLists.txt	2015-09-15 00:47:26.000000000 -0700
-+++ b/CMakeLists.txt	2015-11-08 00:53:22.110407243 -0800
+diff -Nur a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2016-04-12 19:58:22.000000000 +0800
++++ b/CMakeLists.txt	2016-04-17 15:10:48.990655081 +0800
 @@ -29,8 +29,7 @@
  include (FindPkgConfig)
  pkg_check_modules (SERVICE REQUIRED
@@ -14,8 +11,9 @@
  include_directories (${SERVICE_INCLUDE_DIRS})
  
  set (CC_WARNING_ARGS " -Wall -pedantic -Wextra -Wno-missing-field-initializers")
---- a/src/backend-dbus/actions.c	2015-09-15 00:47:26.000000000 -0700
-+++ b/src/backend-dbus/actions.c	2015-11-08 01:06:40.727075507 -0800
+diff -Nur a/src/backend-dbus/actions.c b/src/backend-dbus/actions.c
+--- a/src/backend-dbus/actions.c	2016-04-12 19:58:28.000000000 +0800
++++ b/src/backend-dbus/actions.c	2016-04-17 15:11:42.645348048 +0800
 @@ -19,7 +19,6 @@
  
  #include <glib.h>
@@ -24,7 +22,17 @@
  
  #include "dbus-end-session-dialog.h"
  #include "dbus-login1-manager.h"
-@@ -863,9 +862,7 @@
+@@ -831,9 +830,6 @@
+ static void
+ my_help (IndicatorSessionActions * self G_GNUC_UNUSED)
+ {
+-  if (g_getenv ("MIR_SOCKET") != NULL)
+-    url_dispatch_send("http://www.askubuntu.com", NULL, NULL);
+-  else
+     run_outside_app ("yelp");
+ }
+ 
+@@ -872,9 +868,7 @@
  static void
  my_settings (IndicatorSessionActions * self G_GNUC_UNUSED)
  {
@@ -35,7 +43,7 @@
      run_outside_app ("unity-control-center");
    else
      run_outside_app ("gnome-control-center");
-@@ -874,9 +871,7 @@
+@@ -883,9 +877,7 @@
  static void
  my_online_accounts (IndicatorSessionActions * self G_GNUC_UNUSED)
  {
@@ -46,7 +54,7 @@
      run_outside_app ("unity-control-center credentials");
    else
      run_outside_app ("gnome-control-center credentials");
-@@ -885,9 +880,7 @@
+@@ -894,9 +886,7 @@
  static void
  my_about (IndicatorSessionActions * self G_GNUC_UNUSED)
  {

@@ -3,14 +3,14 @@
 # Contributor: thn81 <root@scrat>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=bamf, repo=xenial
+# vercheck-ubuntu: name=bamf, repo=yakkety
 # vercheck-launchpad: name=bamf
 
 pkgname=bamf-ubuntu
 _actual_ver=0.5.3~bzr0
-_extra_ver=+16.04.20160322.1
+_extra_ver=+16.10.20160705
 pkgver=${_actual_ver}${_extra_ver/+/.}
-pkgrel=1
+pkgrel=2
 pkgdesc="Removes the headache of applications matching into a simple DBus daemon and c wrapper library"
 arch=(i686 x86_64)
 url="https://launchpad.net/bamf"
@@ -26,22 +26,21 @@ source=("https://launchpad.net/ubuntu/+archive/primary/+files/bamf_${_actual_ver
         bamfwatcher.c
         update-bamf-index.pl
         bamfwatcher.service)
-sha512sums=('c9d7dc1a897566b53c0b5b96f296358e0745d4ee8a12dbc68296172f26cb6294e0f9b5d792f67de6add78dcdbffea6d219d645840679eec802cfaf7b6426ce87'
+sha512sums=('b73a3b634b1bd43e620568f614aa6f58fcfd705355b954feec44dc5c63c8d1ecbd5b45b18e651ff650bfcb1fa196c88ab739fb0d94fc1695123b5612d3d0b696'
             '8682d60845782449943ebac95dc5648ec5933f244dad8bbb9e77ac1c692fc03ef0c12b6cd15c2b5f5af30358d2b167362a288adb4b3ee7ea047065eec64f28bf'
             '7db84774b72fb330abe2116f3d1d842c007820c200344d76ff87abab5226488fcc21d2e82cbe5381fb3e7ce0eacc09232f17d64c4e2a5ee8eef0be06808f21ff'
             'b2e899e2916efc6e04af34c3bffc14f6254caaf42d2e3cee88277dde4c191dd93cab14246091beb5d4cfb8a242559b8361a7c4c1dc70c31034ade52689322b83')
 
 prepare() {
-  cd "bamf-${_actual_ver}${_extra_ver}"
-
+  cd .
   sed -i 's/-Werror/-Wno-error/g' configure.ac
 }
 
 build() {
   gcc bamfwatcher.c -lprocps -o bamfwatcher
 
-  cd "bamf-${_actual_ver}${_extra_ver}"
 
+  cd .
   gtkdocize
   autoreconf -vfi
 
@@ -57,8 +56,7 @@ build() {
 }
 
 package() {
-  cd "bamf-${_actual_ver}${_extra_ver}"
-
+cd .
   make DESTDIR="${pkgdir}/" install
 
   install -dm755 "${pkgdir}/usr/bin/"

@@ -1,12 +1,12 @@
 # Maintainer: Michael Healy <horsemanoffaith@gmail.com>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname}, repo=xenial
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
 # vercheck-launchpad: name=${pkgname}
 
 pkgname=indicator-power
 _actual_ver=12.10.6
-_extra_ver=+16.04.20160105
+_extra_ver=+16.10.20160708
 pkgver=${_actual_ver}${_extra_ver/\+/.}
 pkgrel=1
 pkgdesc="An indicator to show the power status of your devices"
@@ -20,12 +20,14 @@ install=${pkgname}.install
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/indicator-power_${_actual_ver}${_extra_ver}.orig.tar.gz"
         0001-Not-a-phone.patch
         0002-Remove-accountsservice-dependency.patch)
-sha512sums=('90f6b08d3bc4f86ad429f8dfa6c1cf5a250ab1747d5cab83158b9540810304bf5666d79f51c99f35a2039fcaf8f71b7743b644001a10258174403639db77fd8b'
-            'e3418b8dbe11d07cdc0376523dad73c3b1a11682a95768664927ceebf4ab36eb9b4cc1e35765cc02adcd8af89288ef4a6bc261999cbca725f93cb71e27a41076'
+sha512sums=('639e62fdfe1b6712a107be184c789d4ba218086699bb9ffcc414d9a64bee82304455ee8421f5351bb0dcc6c022bbddf8c8183b0696b522a6a65eb00bc1838cb9'
+            'b2c5e180dbbc3695d9c6ff3d684b9da61ed9963c8d8d2c2b7224b6574137cf147a81f492e4fb92c25bf1d546e8062cd6b9db8005cf606830222e32cf6800d2d5'
             '18a9dade1df6fd622099d402a40662edd27354f644673870806ea4137440869794ae46b605330d1b1785707dca120560cb2562d40be7c22b3976206aff8c5204')
 
 prepare() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
 
   patch -p1 -i ../0001-Not-a-phone.patch
   patch -p1 -i ../0002-Remove-accountsservice-dependency.patch
@@ -34,21 +36,26 @@ prepare() {
 }
 
 build() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}"
-
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
   export CFLAGS+=" -Wno-error"
 
   rm -rf build; mkdir build; cd build
   cmake .. \
       -DCMAKE_INSTALL_PREFIX=/usr \
-      -DCMAKE_INSTALL_LIBEXECDIR=/usr/lib/${pkgname} \
+      -DCMAKE_INSTALL_LIBEXECDIR=/usr/lib/ \
       -Denable_tests=OFF
   make
 }
 
 package() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}/build/"
-
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
+  
+  cd build 
+  
   make DESTDIR="${pkgdir}/" install
 
   find "${pkgdir}" -type f -name '*.a' -delete

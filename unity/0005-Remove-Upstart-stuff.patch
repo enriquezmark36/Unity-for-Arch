@@ -1,20 +1,7 @@
-From e93f3e94c49f0c56c2d58444f01e6827b10b4a9c Mon Sep 17 00:00:00 2001
-From: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
-Date: Thu, 10 Apr 2014 20:17:13 -0400
-Subject: [PATCH 5/8] Remove Upstart stuff
-
----
- services/CMakeLists.txt         |  7 -------
- services/panel-service.c        |  6 ++++--
- tools/unity.cmake               |  3 +--
- unity-shared/UpstartWrapper.cpp | 15 ++++++++++++++-
- 4 files changed, 19 insertions(+), 12 deletions(-)
-
-diff --git a/services/CMakeLists.txt b/services/CMakeLists.txt
-index df0f767..55accd7 100644
---- a/services/CMakeLists.txt
-+++ b/services/CMakeLists.txt
-@@ -12,7 +12,6 @@ set(UNITY_PANEL_SERVICE_DEPS
+diff -Nur a/services/CMakeLists.txt b/services/CMakeLists.txt
+--- a/services/CMakeLists.txt	2016-04-15 13:32:34.000000000 +0800
++++ b/services/CMakeLists.txt	2016-04-17 20:59:56.078586352 +0800
+@@ -12,7 +12,6 @@
      indicator3-0.4>=12.10.2
      x11
      libido3-0.1>=13.0.0
@@ -22,20 +9,19 @@ index df0f767..55accd7 100644
  )
  
  pkg_check_modules(SERVICE_DEPS REQUIRED ${UNITY_PANEL_SERVICE_DEPS})
-@@ -52,9 +51,3 @@ link_directories(${LIB_PATHS})
+@@ -52,9 +51,3 @@
  add_executable(unity-panel-service ${PANEL_SOURCES})
  target_link_libraries(unity-panel-service ${LIBS})
- install(TARGETS unity-panel-service DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/unity/)
+ install(TARGETS unity-panel-service DESTINATION ${CMAKE_INSTALL_LIBDIR}/unity/)
 -
 -configure_file(unity-panel-service.conf.in ${CMAKE_CURRENT_BINARY_DIR}/unity-panel-service.conf)
--install(FILES ${CMAKE_CURRENT_BINARY_DIR}/unity-panel-service.conf DESTINATION ${CMAKE_INSTALL_PREFIX}/share/upstart/sessions)
+-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/unity-panel-service.conf DESTINATION ${CMAKE_INSTALL_DATADIR}/upstart/sessions)
 -
 -configure_file(unity-panel-service-lockscreen.conf.in ${CMAKE_CURRENT_BINARY_DIR}/unity-panel-service-lockscreen.conf)
--install(FILES ${CMAKE_CURRENT_BINARY_DIR}/unity-panel-service-lockscreen.conf DESTINATION ${CMAKE_INSTALL_PREFIX}/share/upstart/sessions)
-diff --git a/services/panel-service.c b/services/panel-service.c
-index 5642f12..3ff7eca 100644
---- a/services/panel-service.c
-+++ b/services/panel-service.c
+-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/unity-panel-service-lockscreen.conf DESTINATION ${CMAKE_INSTALL_DATADIR}/upstart/sessions)
+diff -Nur a/services/panel-service.c b/services/panel-service.c
+--- a/services/panel-service.c	2016-04-15 13:32:34.000000000 +0800
++++ b/services/panel-service.c	2016-04-17 21:01:32.075899348 +0800
 @@ -34,8 +34,6 @@
  #include <X11/XF86keysym.h>
  #include <X11/extensions/XInput2.h>
@@ -45,17 +31,17 @@ index 5642f12..3ff7eca 100644
  G_DEFINE_TYPE (PanelService, panel_service, G_TYPE_OBJECT);
  
  #define GET_PRIVATE(o) \
-@@ -805,6 +803,9 @@ parse_string_keybinding (const char *str, KeyBinding *kb)
+@@ -804,6 +802,9 @@
  static void
  emit_upstart_event (const gchar *event)
  {
-+#if 1
++ #if 1
 +  (void) event;
-+#else
++ #else
    const gchar *upstartsession = g_getenv ("UPSTART_SESSION");
  
    if (!upstartsession)
-@@ -841,6 +842,7 @@ emit_upstart_event (const gchar *event)
+@@ -840,6 +841,7 @@
      }
  
    g_object_unref (conn);
@@ -63,25 +49,36 @@ index 5642f12..3ff7eca 100644
  }
  
  
-diff --git a/tools/unity.cmake b/tools/unity.cmake
-index 15d0368..1e493e2 100755
---- a/tools/unity.cmake
-+++ b/tools/unity.cmake
-@@ -126,9 +126,8 @@ def run_unity (verbose, debug, advanced_debug, compiz_path, compiz_args, log_fil
+diff -Nur a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+--- a/tests/CMakeLists.txt	2016-04-15 13:32:34.000000000 +0800
++++ b/tests/CMakeLists.txt	2016-04-17 21:10:53.737420688 +0800
+@@ -8,7 +8,7 @@
+ #
+ # Unit tests
+ #
+-set (TEST_DEPS "${UNITY_PLUGIN_DEPS};unity>=4.99.0;libupstart;")
++set (TEST_DEPS "${UNITY_PLUGIN_DEPS};unity>=4.99.0;")
+ pkg_check_modules (TEST_UNIT_DEPS REQUIRED ${TEST_DEPS})
+ 
+ string (REPLACE ";" " " TEST_UNIT_DEPS_CFLAGS_OTHER "${TEST_UNIT_CFLAGS_OTHER}")
+diff -Nur a/tools/unity.cmake b/tools/unity.cmake
+--- a/tools/unity.cmake	2016-04-15 13:32:57.000000000 +0800
++++ b/tools/unity.cmake	2016-04-17 21:07:24.517691769 +0800
+@@ -138,9 +138,9 @@
  
      try:
-         debug_mode = 2 if advanced_debug else 1 if debug else 0
--        subprocess.call(["stop", "unity-panel-service"])
+         options.debug_mode = 2 if options.advanced_debug else 1 if options.debug else 0
+-        if is_upstart_session(): subprocess.call(["stop", "unity-panel-service"])
 +        subprocess.call(["killall", "unity-panel-service"])
-         unity_instance = process_and_start_unity (verbose, debug_mode, compiz_path, compiz_args, log_file)
--        subprocess.call(["start", "unity-panel-service"])
+         unity_instance = process_and_start_unity (compiz_args)
+-        if is_upstart_session(): subprocess.call(["start", "unity-panel-service"])
++        subprocess.call(["/lib/ld-linux-x86-64.so.2", "/usr/lib/unity/unity-panel-service"])
          unity_instance.wait()
-     except KeyboardInterrupt, e:
+     except KeyboardInterrupt as e:
          try:
-diff --git a/unity-shared/UpstartWrapper.cpp b/unity-shared/UpstartWrapper.cpp
-index 5ec3add..0c2995e 100644
---- a/unity-shared/UpstartWrapper.cpp
-+++ b/unity-shared/UpstartWrapper.cpp
+diff -Nur a/unity-shared/UpstartWrapper.cpp b/unity-shared/UpstartWrapper.cpp
+--- a/unity-shared/UpstartWrapper.cpp	2016-04-15 13:32:34.000000000 +0800
++++ b/unity-shared/UpstartWrapper.cpp	2016-04-17 21:35:13.150300198 +0800
 @@ -20,7 +20,6 @@
  #include "UpstartWrapper.h"
  
@@ -90,7 +87,7 @@ index 5ec3add..0c2995e 100644
  
  namespace unity
  {
-@@ -36,19 +35,29 @@ public:
+@@ -36,19 +35,30 @@
  
    void Emit(std::string const& name);
  
@@ -100,6 +97,7 @@ index 5ec3add..0c2995e 100644
 +#endif
  };
  
++
  UpstartWrapper::Impl::Impl(bool test_mode)
  {
 +#if 1
@@ -120,7 +118,7 @@ index 5ec3add..0c2995e 100644
  }
  
  //
-@@ -68,7 +77,11 @@ UpstartWrapper::~UpstartWrapper()
+@@ -68,7 +78,11 @@
  
  void UpstartWrapper::Emit(std::string const& name)
  {
@@ -132,16 +130,3 @@ index 5ec3add..0c2995e 100644
  }
  
  }
---- a/tests/CMakeLists.txt	2016-01-31 16:18:52.356108056 -0800
-+++ b/tests/CMakeLists.txt	2016-01-31 16:19:13.626108976 -0800
-@@ -8,7 +8,7 @@
- #
- # Unit tests
- #
--set (TEST_DEPS "${UNITY_PLUGIN_DEPS};unity>=4.99.0;libupstart;")
-+set (TEST_DEPS "${UNITY_PLUGIN_DEPS};unity>=4.99.0;")
- pkg_check_modules (TEST_UNIT_DEPS REQUIRED ${TEST_DEPS})
- 
- string (REPLACE ";" " " TEST_UNIT_DEPS_CFLAGS_OTHER "${TEST_UNIT_CFLAGS_OTHER}")
--- 
-2.3.7

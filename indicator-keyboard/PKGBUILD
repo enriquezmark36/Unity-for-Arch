@@ -1,7 +1,7 @@
 # Maintainer: Michael Healy <horsemanoffaith@gmail.com>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname}, repo=xenial
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
 
 pkgname=indicator-keyboard
 _actual_ver=0.0.0
@@ -13,7 +13,7 @@ arch=(i686 x86_64)
 url="https://launchpad.net/indicator-keyboard"
 license=(GPL)
 groups=(unity)
-depends=(accountsservice gnome-desktop gucharmap ibus libgee06 libgnomekbd
+depends=(accountsservice gnome-desktop gucharmap ibus libgee libgnomekbd
          lightdm-ubuntu unity-control-center)
 makedepends=(gobject-introspection intltool vala)
 conflicts=(ibus-ubuntu)
@@ -43,7 +43,7 @@ build() {
   cd "${pkgname}-${_actual_ver}${_extra_ver}"
   intltoolize -f
   autoreconf -vfi
-  ./configure --prefix=/usr --libexecdir=/usr/lib/indicator-keyboard
+  ./configure --prefix=/usr --libexecdir=/usr/lib/
   make
 }
 

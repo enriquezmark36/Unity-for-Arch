@@ -2,7 +2,7 @@
 #Todo
 # * add error detection
 # * check for root if installing
-while getopts ednhbp:is: opt; do
+while getopts ednhbcp:is: opt; do
 	case $opt in
 		n)
 			NOCONFIRM=true
@@ -12,6 +12,7 @@ while getopts ednhbp:is: opt; do
 			echo "-h Shows this help file"
 			echo "-n installs package without user confirmation"
 			echo "-b just builds without installing"
+			echo "-c Cleans all source and built packages"
 			echo "-p [package-name] only build specific package"
 			echo "-i [package-name] ignore certain package"
 			echo "-s [package-name] start at package"
@@ -25,6 +26,9 @@ while getopts ednhbp:is: opt; do
 			;;
 		b)
 			NOINSTALL=true
+			;;
+		c)
+			CLEAN=true
 			;;
 		p)
 			INSTALLPACKAGE=$OPTARG
@@ -79,6 +83,11 @@ for package in "${packages[@]}"; do
 	elif [ "$DOWNLOAD" == "true" ]; then
 		echo "Downloading ${package}..."
 		makepkg -gC &> /dev/null
+	elif [ "$CLEAN" == "true" ]; then
+		find . -type d -exec rm -rvf {} \;
+		find . -name "*.pkg.*" -type f -exec rm -vf {} \;
+		find . -name "*.diff*" -type f -exec rm -vf {} \;
+		find . -name "*.tar*" -type f -exec rm -vf {} \;
 	else
 		makepkg --nocheck -fsicC
 	fi

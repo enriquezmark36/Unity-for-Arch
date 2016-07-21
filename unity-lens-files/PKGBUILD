@@ -3,7 +3,7 @@
 # Contributor: thn81 <root@scrat>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname}, repo=xenial
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
 
 pkgname=unity-lens-files
 _actual_ver=7.1.0
@@ -14,7 +14,7 @@ pkgdesc="A daemon exposing your files and file history to Unity"
 arch=(i686 x86_64)
 url="https://launchpad.net/unity-place-files"
 license=(GPL)
-depends=(zeitgeist-ubuntu libgee06 libunity libxdg-basedir xdg-user-dirs pyxdg
+depends=(zeitgeist-ubuntu libgee libunity libxdg-basedir xdg-user-dirs pyxdg
          dconf)
 makedepends=(vala intltool)
 groups=(unity)

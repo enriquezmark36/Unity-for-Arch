@@ -1,52 +1,38 @@
-From 27eac61bfe762aaf44a08081965d6bbf6f4ad7d3 Mon Sep 17 00:00:00 2001
-From: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
-Date: Sat, 11 Oct 2014 17:52:55 -0400
-Subject: [PATCH 2/3] Not a phone
-
----
- CMakeLists.txt                  |  1 -
- include/datetime/actions-live.h |  1 -
- src/actions-live.cpp            | 13 -------------
- 3 files changed, 15 deletions(-)
-
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 4d2fd95..fad839c 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -40,7 +40,6 @@ pkg_check_modules (SERVICE_DEPS REQUIRED
+diff -urN a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2016-06-29 22:15:16.000000000 +0800
++++ b/CMakeLists.txt	2016-07-15 09:45:26.800242290 +0800
+@@ -46,7 +46,6 @@
                     libedataserver-1.2>=3.5
                     gstreamer-1.0>=1.2
                     libnotify>=0.7.6
 -                   url-dispatcher-1>=1
-                    properties-cpp>=0.0.1)
- include_directories (SYSTEM ${SERVICE_DEPS_INCLUDE_DIRS})
- 
-diff --git a/include/datetime/actions-live.h b/include/datetime/actions-live.h
-index 0214d65..4dfa398 100644
---- a/include/datetime/actions-live.h
-+++ b/include/datetime/actions-live.h
-@@ -54,7 +54,6 @@ public:
- 
+                    properties-cpp>=0.0.1
+                    libaccounts-glib>=1.18
+                    messaging-menu>=12.10
+diff -urN a/include/datetime/actions-live.h b/include/datetime/actions-live.h
+--- a/include/datetime/actions-live.h	2016-06-29 22:15:16.000000000 +0800
++++ b/include/datetime/actions-live.h	2016-07-15 09:45:26.803575264 +0800
+@@ -56,7 +56,6 @@
  protected:
+     virtual Desktop get_desktop();
      virtual void execute_command(const std::string& command);
 -    virtual void dispatch_url(const std::string& url);
+ 
+     void unity8_open_appointment(const Appointment& appt, const DateTime& date);
  };
- 
- } // namespace datetime
-diff --git a/src/actions-live.cpp b/src/actions-live.cpp
-index 3cbfb78..86d87b9 100644
---- a/src/actions-live.cpp
-+++ b/src/actions-live.cpp
-@@ -19,8 +19,6 @@
- 
+diff -urN a/src/actions-live.cpp b/src/actions-live.cpp
+--- a/src/actions-live.cpp	2016-06-29 22:15:16.000000000 +0800
++++ b/src/actions-live.cpp	2016-07-15 09:51:44.207668811 +0800
+@@ -20,8 +20,6 @@
+ #include <datetime/dbus-shared.h>
  #include <datetime/actions-live.h>
  
 -#include <url-dispatcher.h>
 -
  #include <glib.h>
  
- namespace unity {
-@@ -49,21 +47,14 @@ void LiveActions::execute_command(const std::string& cmdstr)
+ #include <sstream>
+@@ -52,12 +50,6 @@
      }
  }
  
@@ -59,44 +45,65 @@ index 3cbfb78..86d87b9 100644
  /***
  ****
  ***/
-
- void LiveActions::desktop_open_settings_app()
+@@ -95,7 +87,6 @@
  {
-     if (g_getenv ("MIR_SOCKET") != nullptr)
-     {
+     switch(get_desktop()) {
+         case LiveActions::UNITY8:
+-            dispatch_url("appid://com.ubuntu.clock/clock/current-user-version");
+             break;
+         case LiveActions::UNITY7:
+         default:
+@@ -119,12 +110,7 @@
+ {
+     switch(get_desktop()) {
+         case LiveActions::UNITY8:
+-        {
+-            const auto utc = dt.to_timezone("UTC");
+-            auto cmd = utc.format("calendar://startdate=%Y-%m-%dT%H:%M:%S+00:00");
+-            dispatch_url(cmd);
+             break;
+-        }
+         case LiveActions::UNITY7:
+         default:
+         {
+@@ -139,7 +125,6 @@
+ {
+     switch(get_desktop()) {
+     case LiveActions::UNITY8:
 -        dispatch_url("settings:///system/time-date");
-     }
-     else if ((g_strcmp0 (g_getenv ("XDG_CURRENT_DESKTOP"), "Unity") == 0))
-     {
-@@ -130,14 +122,12 @@ void LiveActions::desktop_open_calendar_app(const DateTime& dt)
+         break;
+     case LiveActions::UNITY7:
+         execute_command("unity-control-center datetime");
+@@ -184,20 +169,19 @@
  
- void LiveActions::phone_open_alarm_app()
+ void LiveActions::unity8_open_appointment(const Appointment& appt, const DateTime& date)
  {
--    dispatch_url("appid://com.ubuntu.clock/clock/current-user-version");
- }
- 
- void LiveActions::phone_open_appointment(const Appointment& appt)
- {
-     if (!appt.activation_url.empty())
-     {
+-    if (!appt.activation_url.empty())
+-    {
 -        dispatch_url(appt.activation_url);
-     }
-     else switch (appt.type)
+-    }
+-    else switch (appt.type)
++    if (appt.activation_url.empty())
      {
-@@ -152,13 +142,10 @@ void LiveActions::phone_open_appointment(const Appointment& appt)
- 
- void LiveActions::phone_open_calendar_app(const DateTime&)
- {
--    // does calendar app have a mechanism for specifying dates?
--    dispatch_url("appid://com.ubuntu.calendar/calendar/current-user-version");
+-        case Appointment::UBUNTU_ALARM:
+-            open_alarm_app();
+-            break;
+-
+-        case Appointment::EVENT:
+-        default:
+-            open_calendar_app(date);
+-            break;
++        switch (appt.type)
++        {
++            case Appointment::UBUNTU_ALARM:
++                open_alarm_app();
++                break;
++
++            case Appointment::EVENT:
++            default:
++                open_calendar_app(date);
++                break;
++        }
+     }
  }
  
- void LiveActions::phone_open_settings_app()
- {
--    dispatch_url("settings:///system/time-date");
- }
- 
- /***
--- 
-2.3.7
-

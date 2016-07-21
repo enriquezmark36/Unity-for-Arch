@@ -1,34 +1,20 @@
-From 08d077e51cecda056692c0ff78c20d01546f09b4 Mon Sep 17 00:00:00 2001
-From: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
-Contributor: Michael Healy <horsemanoffaith@gmail.com>
-Date: Sat, 9 Aug 2014 14:56:18 -0400
-Subject: [PATCH] Not a phone
-
----
- CMakeLists.txt | 3 +--
- src/notifier.c | 2 --
- src/service.c  | 4 ----
- 3 files changed, 1 insertion(+), 8 deletions(-)
-
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 569100d..30be771 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -37,8 +37,7 @@ pkg_check_modules(SERVICE_DEPS REQUIRED
+diff -Nur a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2016-07-08 16:00:20.000000000 +0800
++++ b/CMakeLists.txt	2016-07-15 11:13:47.910004939 +0800
+@@ -45,8 +45,7 @@
                    gio-2.0>=2.36
                    gio-unix-2.0>=2.36
                    gudev-1.0>=204
 -                  libnotify>=0.7.6
--                  gstreamer-1.0>=1.2
 -                  url-dispatcher-1>=1)
-+                  libnotify>=0.7.6
-+                  gstreamer-1.0>=1.2)
++                  libnotify>=0.7.6)
  
  include_directories (SYSTEM ${SERVICE_DEPS_INCLUDE_DIRS})
  
---- a/src/notifier.c	2016-01-20 20:00:39.361004030 -0800
-+++ a/src/notifier.c	2016-01-20 20:16:18.397711317 -0800
-@@ -18,13 +18,11 @@
+diff -Nur a/src/notifier.c b/src/notifier.c
+--- a/src/notifier.c	2016-07-08 16:00:20.000000000 +0800
++++ b/src/notifier.c	2016-07-15 11:23:11.452688260 +0800
+@@ -18,13 +18,10 @@
   */
  
  #include "datafiles.h"
@@ -36,23 +22,22 @@ index 569100d..30be771 100644
  #include "dbus-battery.h"
  #include "dbus-shared.h"
  #include "notifier.h"
- #include "sound-player.h"
  
 -#include <url-dispatcher.h>
- 
+-
  #include <libnotify/notify.h>
  
-@@ -86,8 +84,7 @@
-   IndicatorPowerSoundPlayer * sound_player;
+ #include <glib/gi18n.h>
+@@ -81,8 +78,6 @@
+   gboolean actions_supported;
  
    GCancellable * cancellable;
 -  DbusAccountsServiceSound * accounts_service_sound_proxy;
 -  gboolean accounts_service_sound_proxy_pending;
-+
  }
  IndicatorPowerNotifierPrivate;
  
-@@ -142,82 +139,6 @@
+@@ -137,54 +132,6 @@
  }
  
  /***
@@ -103,55 +88,42 @@ index 569100d..30be771 100644
 -      && dbus_accounts_service_sound_get_silent_mode(p->accounts_service_sound_proxy);
 -}
 -
--static void
--play_low_battery_sound (IndicatorPowerNotifier * self)
--{
--  const gchar * const key = LOW_BATTERY_SOUND;
--  gchar * filename;
--  priv_t * const p = get_priv(self);
--
--  /* can't play? */
--  g_return_if_fail (p->sound_player != NULL);
--
--  /* won't play? */
--  if (silent_mode(self))
--    return;
--
--  filename = datafile_find(DATAFILE_TYPE_SOUND, key);
--  if (filename != NULL)
--    {
--      gchar * uri = g_filename_to_uri(filename, NULL, NULL);
--      indicator_power_sound_player_play_uri (p->sound_player, uri);
--      g_free(uri);
--      g_free(filename);
--    }
--  else
--    {
--      g_warning("Unable to find '%s' in XDG data dirs", key);
--    }
--}
--
 -/***
  ****  Notifications
  ***/
  
-@@ -259,7 +180,6 @@
+@@ -226,7 +173,7 @@
                              char               * action    G_GNUC_UNUSED,
                              gpointer             user_data G_GNUC_UNUSED)
  {
 -  url_dispatch_send("settings:///system/battery", NULL, NULL);
++
  }
  
  static void
-@@ -387,7 +307,6 @@
-       ((new_power_level != POWER_LEVEL_OK) && new_discharging && !old_discharging))
+@@ -298,21 +245,6 @@
+ 
+   if (are_actions_supported(self))
      {
-       notification_show (self);
--      play_low_battery_sound (self);
-     }
-   else if (!new_discharging || (new_power_level == POWER_LEVEL_OK))
-     {
-@@ -467,7 +387,6 @@
+-      if (!silent_mode(self))
+-        {
+-          gchar* filename = datafile_find(DATAFILE_TYPE_SOUND, LOW_BATTERY_SOUND);
+-          if (filename != NULL)
+-            {
+-              gchar * uri = g_filename_to_uri(filename, NULL, NULL);
+-              notify_notification_set_hint(nn, "sound-file", g_variant_new_take_string(uri));
+-              g_clear_pointer(&filename, g_free);
+-            }
+-          else
+-            {
+-              g_warning("Unable to find '%s' in XDG data dirs", LOW_BATTERY_SOUND);
+-            }
+-        }
+-
+       notify_notification_set_hint(nn, "x-canonical-snap-decisions", g_variant_new_string("true"));
+       notify_notification_set_hint(nn, "x-canonical-non-shaped-icon", g_variant_new_string("true"));
+       notify_notification_set_hint(nn, "x-canonical-private-affirmative-tint", g_variant_new_string("true"));
+@@ -439,7 +371,6 @@
    notification_clear (self);
    indicator_power_notifier_set_battery (self, NULL);
    g_clear_object (&p->dbus_battery);
@@ -159,10 +131,11 @@ index 569100d..30be771 100644
  
    G_OBJECT_CLASS (indicator_power_notifier_parent_class)->dispose (o);
  }
-@@ -502,17 +422,6 @@
-   if (!instance_count++ && !notify_init("indicator-power-service"))
-     g_critical("Unable to initialize libnotify! Notifications might not be shown.");
+@@ -473,18 +404,6 @@
  
+   if (!instance_count++ && !notify_init(SERVICE_EXEC))
+     g_critical("Unable to initialize libnotify! Notifications might not be shown.");
+-
 -  p->accounts_service_sound_proxy_pending = TRUE;
 -  gchar* object_path = g_strdup_printf("/org/freedesktop/Accounts/User%lu", (gulong)getuid());
 -  dbus_accounts_service_sound_proxy_new_for_bus(
@@ -177,11 +150,9 @@ index 569100d..30be771 100644
  }
  
  static void
-
-diff --git a/src/service.c b/src/service.c
-index 665151c..bc82a41 100644
---- a/src/service.c
-+++ b/src/service.c
+diff -Nur a/src/service.c b/src/service.c
+--- a/src/service.c	2016-07-08 16:00:29.000000000 +0800
++++ b/src/service.c	2016-07-15 11:12:07.724834388 +0800
 @@ -20,7 +20,6 @@
  
  #include <glib/gi18n.h>
@@ -190,21 +161,26 @@ index 665151c..bc82a41 100644
  
  #include "brightness.h"
  #include "dbus-shared.h"
-@@ -785,7 +784,5 @@ on_settings_activated (GSimpleAction * a      G_GNUC_UNUSED,
+@@ -802,12 +801,7 @@
+ 
+   if (control_center_cmd == NULL)
      {
-       if (g_getenv ("MIR_SOCKET") != NULL)
-         {
+-      if (g_getenv ("MIR_SOCKET") != NULL)
+-        {
 -          url_dispatch_send("settings:///system/battery", NULL, NULL);
 -          return;
+-        }
+-      else if (!g_strcmp0 (g_getenv ("DESKTOP_SESSION"), "xubuntu"))
++      if (!g_strcmp0 (g_getenv ("DESKTOP_SESSION"), "xubuntu"))
+         {
+           control_center_cmd = "xfce4-power-manager-settings";
          }
-       else if (!g_strcmp0 (g_getenv ("DESKTOP_SESSION"), "xubuntu"))
-@@ -833,7 +831,6 @@ on_phone_settings_activated (GSimpleAction * a      G_GNUC_UNUSED,
+@@ -852,7 +846,7 @@
                               GVariant      * param  G_GNUC_UNUSED,
                               gpointer        gself  G_GNUC_UNUSED)
  {
 -  url_dispatch_send("settings:///system/battery", NULL, NULL);
++  
  }
  
  /***
--- 
-2.1.1

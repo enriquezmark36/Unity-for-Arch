@@ -2,7 +2,7 @@
 # Contributor: Michael Healy <horsemanoffaith@gmail.com>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname}, repo=wily
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
 
 pkgname=libqtdee
 _actual_ver=0.2.4

@@ -5,12 +5,12 @@
 # optdepends.
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname%-*}, repo=xenial
+# vercheck-ubuntu: name=${pkgname%-*}, repo=yakkety
 # vercheck-launchpad: name=${pkgname%-*}
 
 pkgname=lightdm-ubuntu
 _ubuntu_rel=0ubuntu1
-pkgver=1.17.4
+pkgver=1.19.3
 pkgrel=1
 pkgdesc="A lightweight display manager"
 arch=(i686 x86_64)
@@ -25,9 +25,10 @@ makedepends=(gnome-common gobject-introspection gtk-doc gtk3-ubuntu intltool qt4
 optdepends=('accountsservice: DBus interface for querying user information'
             'gnome-keyring: For pam_gnome_keyring.so in the greeter PAM config'
             'gtk3: For using the GTK greeter'
-            'lightdm-unity-greeter: Default Ubuntu 13.04 Greeter'
+            'lightdm-unity-greeter: Default Ubuntu 16.04 Greeter'
             'qt4: To use the qt4 version of liblightdm-qt'
-            'qt5-base: To use the qt5 version of liblightdm-qt')
+            'qt5-base: To use the qt5 version of liblightdm-qt'
+            'xorg-server: Needed to run X')
 provides=("lightdm=${pkgver}" "liblightdm-qt4=${pkgver}")
 conflicts=(lightdm liblightdm-qt4)
 options=(emptydirs)
@@ -36,21 +37,15 @@ backup=(etc/lightdm/keys.conf
         etc/lightdm/users.conf)
 install=lightdm.install
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/lightdm_${pkgver}-${_ubuntu_rel}.tar.gz"
-        lightdm.service
         lightdm.tmpfiles.d
-        lightdm.pam
-        lightdm-autologin.pam
-        lightdm-greeter.pam
         lightdm.rules
+	lightdm.service
         0001-guest-account-Use-cross-distro-commands.patch)
-sha512sums=('df0e299d0a9bd83bd603acb2a287324717b5bc1520ab8fed03d58a5b9c0bf1191e8de34656f8aa1618423ca697d76ed6204cecf6c375e067b8139902a85f4b49'
-            '26bb333e58ee63a6a0d472bb0a7f9006b93c7de629780399b1dff4af3aaccea02aa74ed0410b8fa6ba55b285f7c7bb6180db059928feba56f779c5b8f3ba8b86'
+sha512sums=('4c43309a5f0520047108646dcc8c5ede6da5f1478fd2ed7df30da738efe36129b1c98ab1872391a04b64ccf38afc3d28f99137a92fa824b3d0e60838490e2c97'
             '81a76a49eb208b1d33f5ac0184d87a377cd37c522d74a93ccd3d96b3d6e32c44872a65873b91fec3daba0846cdb5a938b51944697e636c045d03259bd5424644'
-            '1067bcb25b6d6d01256b176b5854d1ace700ba2b7323b4af257aa95d2f47d5043ac22811f65e99f1e961772cd1e81c153ef69b162918827bd9d7d50d458908df'
-            '6f59d97515b37d53fb4f56de0f65994710e02c197c6d4c096aa7cdb9fe518d29223960018ae4ad8003056fed3210f47f3aa459c85b8efca80089f2046196892c'
-            '3b482f7e551df20a5c5d9331a420275d1dad5bb6aad287247baea82dc40dc31dca22db4da180fbb950865e37cf94f1737fa1ee7ec2f5233540f82f2f570a408b'
             '8d6aa12c4d129c25e56ecf2904db4e294d46631d11bd8bec2f20a76c871ba758094abb24616d3d2038a684fbb736ee61d1f80697d525d62c4dc68113e101194f'
-            'e48987477a9e04d78831069b40661467d7577cdc9368a76395b3ee9a9ac9d9d4ab06cb58342aae65fd538db6918002172061fe09c486add2da5c9925f231355a')
+            '4b845c4286be743f47431729ee99874f2042f9a17740b59641c5d065c90cc12b232a3b6cd057a20ee1c338ec6320168b5de6ee616f2b72f0fe7a84a11e49ebd1'
+            '67c32e5d0865efd6d8a8bad42efa52eaa36ad4ec5c31e083edb908a5ef5ff489905ca34a46714d83e2875dcc5c96606d63d1c42fad3e555b48cbc6bd9f559ead')
             
 prepare() {
   cd "lightdm-${pkgver}"
@@ -90,7 +85,8 @@ build() {
     --libexecdir=/usr/lib/lightdm \
     --localstatedir=/var \
     --with-user-session=ubuntu \
-    --with-greeter-user=lightdm
+    --with-greeter-user=lightdm \
+    --disable-libaudit
 
   make
 }
@@ -100,19 +96,14 @@ package() {
   make DESTDIR="${pkgdir}/" install
 
   install -dm755 "${pkgdir}/usr/lib/systemd/system/"
+  install -m755 "${srcdir}"/lightdm.service \
+		"${pkgdir}/usr/lib/systemd/system/"
+
 
   # Additional LightDM configuration files
   install -dm755 "${pkgdir}"/etc/lightdm/lightdm.conf.d/
   install -m644 debian/50-{xserver-command,greeter-wrapper,guest-wrapper}.conf \
                 "${pkgdir}"/etc/lightdm/lightdm.conf.d/
-
-  # Install PAM service
-  install -dm755  "${pkgdir}"/etc/pam.d/
-  install -m644 "${srcdir}"/lightdm.pam "${pkgdir}"/etc/pam.d/lightdm
-  install -m644 "${srcdir}"/lightdm-autologin.pam \
-                "${pkgdir}"/etc/pam.d/lightdm-autologin
-  install -m644 "${srcdir}"/lightdm-greeter.pam \
-                "${pkgdir}"/etc/pam.d/lightdm-greeter
 
   # Install configuration files
   install -dm755 "${pkgdir}"/usr/share/doc/lightdm/
@@ -128,9 +119,6 @@ package() {
   install -m755 debian/lightdm-greeter-session "${pkgdir}"/usr/lib/lightdm/
   install -m755 debian/config-error-dialog.sh "${pkgdir}"/usr/lib/lightdm/
 
-  # Install systemd service
-  install -m644 "${srcdir}"/lightdm.service "${pkgdir}"/usr/lib/systemd/system/
-
   # Install systemd tmpfiles.d file
   install -dm755 "${pkgdir}"/usr/lib/tmpfiles.d/
   install -m644 "${srcdir}"/lightdm.tmpfiles.d \
@@ -138,7 +126,7 @@ package() {
 
   # Install PolicyKit rules from Fedora which allow the lightdm user to access
   # the systemd-logind, consolekit, and upower DBus interfaces
-  install -dm700 "${pkgdir}"/usr/share/polkit-1/rules.d/
+  install -dm750 "${pkgdir}"/usr/share/polkit-1/rules.d/
   install -m644 "${srcdir}"/lightdm.rules \
                 "${pkgdir}"/usr/share/polkit-1/rules.d/
 

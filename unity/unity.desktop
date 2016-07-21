@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Unity Desktop Shell
+Exec=/usr/bin/env COMPIZ_CONFIG_PROFILE="ubuntu" /usr/bin/unity
+OnlyShowIn=Unity;
+NoDisplay=true
+X-GNOME-Autostart-Phase=WindowManager
+X-GNOME-Autostart-Notify=true
+X-GNOME-AutoRestart=true

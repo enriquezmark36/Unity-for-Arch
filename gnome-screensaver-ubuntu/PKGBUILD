@@ -3,7 +3,7 @@
 # Contributor: Jan de Groot <jgc@archlinux.org>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname%-*}, repo=xenial
+# vercheck-ubuntu: name=${pkgname%-*}, repo=yakkety
 # vercheck-archlinux: name=${pkgname%-*}, repo=community, arch=x86_64
 # vercheck-gnome: name=${pkgname%-*}, majorver=3.6
 
@@ -98,7 +98,7 @@ build() {
     --localstatedir=/var \
     --libexecdir=/usr/lib/gnome-screensaver \
     --with-mit-ext \
-    --with-systemd \
+    --with-mit-ext \
     --enable-locking # From debian/rules
 
   make

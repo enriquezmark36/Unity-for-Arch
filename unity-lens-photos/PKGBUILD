@@ -1,7 +1,7 @@
 # Maintainer: Michael Healy <horsemanoffaith@gmai.com>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname}, repo=xenial
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
 # vercheck-launchpad: name=${pkgname}
 
 pkgname=unity-lens-photos
@@ -14,8 +14,7 @@ arch=(any)
 url="https://launchpad.net/unity-lens-photos"
 license=(GPL)
 groups=(unity)
-depends=(python-httplib2 python-gobject python-oauthlib dee-ubuntu libunity libsoup
-         libsoup-gnome)
+depends=(python-httplib2 python-gobject python-oauthlib dee-ubuntu libunity libsoup libsoup-gnome)
 makedepends=(python python-distutils-extra)
 options=(!emptydirs)
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity-lens-photos_${_actual_ver}${_extra_ver}.orig.tar.gz")

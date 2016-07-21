@@ -1,0 +1,39 @@
+diff -urN a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2016-06-29 22:15:16.000000000 +0800
++++ b/CMakeLists.txt	2016-07-15 10:35:07.705007163 +0800
+@@ -50,8 +50,7 @@
+                    properties-cpp>=0.0.1
+                    libaccounts-glib>=1.18
+                    messaging-menu>=12.10
+-                   uuid>=2.25
+-                   ubuntu-app-launch-2)
++                   uuid>=2.25)
+ include_directories (SYSTEM ${SERVICE_DEPS_INCLUDE_DIRS})
+ 
+ ##
+diff -urN a/src/notifications.cpp b/src/notifications.cpp
+--- a/src/notifications.cpp	2016-06-29 22:15:16.000000000 +0800
++++ b/src/notifications.cpp	2016-07-15 11:04:34.688071411 +0800
+@@ -24,8 +24,6 @@
+ #include <messaging-menu/messaging-menu-app.h>
+ #include <messaging-menu/messaging-menu-message.h>
+ 
+-#include <libubuntu-app-launch-2/ubuntu-app-launch/appid.h>
+-
+ #include <uuid/uuid.h>
+ 
+ #include <gio/gdesktopappinfo.h>
+@@ -437,12 +435,7 @@
+ 
+     static std::string calendar_app_id()
+     {
+-        auto app_id = ubuntu::app_launch::AppID::discover("com.ubuntu.calendar");
+-        if (!app_id.empty())
+-            // Due the use of old API by messaging_menu we need append a extra ".desktop" to the app_id.
+-            return std::string(app_id) + ".desktop";
+-        else
+-            return std::string();
++        return std::string();
+     }
+ 
+     static std::string calendar_app_icon()

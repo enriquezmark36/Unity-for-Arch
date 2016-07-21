@@ -3,7 +3,7 @@
 # Contributor: thn81 <root@scrat>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname}, repo=xenial
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
 # vercheck-launchpad: name=${pkgname}
 
 pkgname=indicator-application
@@ -32,7 +32,7 @@ build() {
   cd "${pkgname}-${_actual_ver}${_extra_ver}"
 
   autoreconf -vfi
-  ./configure --prefix=/usr --libexecdir=/usr/lib/${pkgname} --disable-static
+  ./configure --prefix=/usr --libexecdir=/usr/lib/ --disable-static
   make
 }
 

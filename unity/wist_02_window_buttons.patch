@@ -1,0 +1,144 @@
+Patch to move the window buttons to the right: min, max, close
+but the buttons on the top panel will be left untouched.
+Kudos to the one who came up with this!
+Big Thanks to lastcyrol at https://launchpad.net/~lastcyrol.
+
+diff -Nur a/decorations/DecoratedWindow.cpp b/decorations/DecoratedWindow.cpp
+--- a/decorations/DecoratedWindow.cpp	2016-07-05 18:21:18.000000000 +0800
++++ b/decorations/DecoratedWindow.cpp	2016-07-15 13:43:53.723885570 +0800
+@@ -402,14 +402,25 @@
+   top_layout_->focused = active();
+   top_layout_->scale = cv_->DPIScale();
+ 
+-  if (win_->actions() & CompWindowActionCloseMask)
+-    top_layout_->Append(std::make_shared<WindowButton>(win_, WindowButtonType::CLOSE));
++  if (win_->actions() & CompWindowActionCloseMask) {
++    auto clsButton = std::make_shared<WindowButton>(win_, WindowButtonType::CLOSE);
++    clsButton->rightAlligned = true;
++    top_layout_->Append(clsButton);
++  }
++
++  if (win_->actions() & (CompWindowActionMaximizeHorzMask|CompWindowActionMaximizeVertMask)) {
++    auto maxButton = std::make_shared<WindowButton>(win_, WindowButtonType::MAXIMIZE);
++    maxButton->rightAlligned = true;
++    top_layout_->Append(maxButton);
++  }
++
++  if (win_->actions() & CompWindowActionMinimizeMask) {
++    auto minButton = std::make_shared<WindowButton>(win_, WindowButtonType::MINIMIZE);
++    minButton->rightAlligned = true;
++    top_layout_->Append(minButton);
++  }
+ 
+-  if (win_->actions() & CompWindowActionMinimizeMask)
+-    top_layout_->Append(std::make_shared<WindowButton>(win_, WindowButtonType::MINIMIZE));
+ 
+-  if (win_->actions() & (CompWindowActionMaximizeHorzMask|CompWindowActionMaximizeVertMask))
+-    top_layout_->Append(std::make_shared<WindowButton>(win_, WindowButtonType::MAXIMIZE));
+ 
+   auto title = std::make_shared<Title>();
+   title->text = last_title_.empty() ? WindowManager::Default().GetWindowName(win_->id()) : last_title_;
+diff -Nur a/decorations/DecorationsWidgets.cpp b/decorations/DecorationsWidgets.cpp
+--- a/decorations/DecorationsWidgets.cpp	2016-07-05 18:21:18.000000000 +0800
++++ b/decorations/DecorationsWidgets.cpp	2016-07-15 13:38:20.630093863 +0800
+@@ -410,7 +410,8 @@
+ 
+   do
+   {
+-    nux::Size content(min(left_padding, max_.width), 0);
++    nux::Size contentLA(min(left_padding, max_.width), 0);
++    nux::Size contentRA(min(right_padding, max_.width), 0);
+ 
+     for (auto const& item : items_)
+     {
+@@ -426,29 +427,37 @@
+       }
+ 
+       auto const& item_geo = item->Geometry();
+-      content.height = max(content.height, item_geo.height());
+-      item->SetX(rect_.x() + content.width);
++      if (item->rightAlligned) {
++        contentRA.height = max(contentRA.height, item_geo.height());
++        item->SetX(rect_.x() + max_.width - contentRA.width - item_geo.width());
++
++        if (item_geo.width() > 0) contentRA.width += item_geo.width() + inner_padding;
++      } else {
++        contentLA.height = max(contentLA.height, item_geo.height());
++        item->SetX(rect_.x() + contentLA.width);
+ 
+-      if (item_geo.width() > 0)
+-        content.width += item_geo.width() + inner_padding;
++        if (item_geo.width() > 0) contentLA.width += item_geo.width() + inner_padding;
++      }
+     }
+ 
+-    if (!items_.empty() && content.width > inner_padding)
+-      content.width -= inner_padding;
++    if (!items_.empty()) {
++      if (contentLA.width > inner_padding) contentLA.width -= inner_padding;
++      if (contentRA.width > inner_padding) contentRA.width -= inner_padding;
++    }
+ 
+-    int actual_right_padding = max(0, min(right_padding, max_.width - content.width));
++    int centre_padding = max(0, min(right_padding, max_.width - contentLA.width - contentRA.width));
+     int vertical_padding = top_padding + bottom_padding;
+ 
+-    content.width += actual_right_padding;
+-    content.height += min(vertical_padding, max_.height);
++    contentLA.width += centre_padding + contentRA.width;
++    contentLA.height = max(contentLA.height, contentRA.height) + min(vertical_padding, max_.height);
+ 
+-    if (content.width < min_.width)
+-      content.width = min_.width;
++    if (contentLA.width < min_.width)
++      contentLA.width = min_.width;
+ 
+-    if (content.height < min_.height)
+-      content.height = min_.height;
++    if (contentLA.height < min_.height)
++      contentLA.height = min_.height;
+ 
+-    int exceeding_width = content.width - max_.width + inner_padding + right_padding - actual_right_padding;
++    int exceeding_width = contentLA.width - max_.width + inner_padding + right_padding - centre_padding;
+     int content_y = rect_.y() + top_padding;
+ 
+     for (auto it = items_.rbegin(); it != items_.rend(); ++it)
+@@ -460,10 +469,10 @@
+ 
+       auto const& item_geo = item->Geometry();
+ 
+-      if (exceeding_width > 0)
++      if (exceeding_width > 0 && !item->rightAlligned)
+         exceeding_width -= inner_padding;
+ 
+-      if (exceeding_width > 0 && item_geo.width() > 0)
++      if (exceeding_width > 0 && item_geo.width() > 0 && !item->rightAlligned)
+       {
+         int old_width = item_geo.width();
+         int max_item_width = clamp_size(old_width - exceeding_width);
+@@ -471,11 +480,11 @@
+         exceeding_width -= (old_width - max_item_width);
+       }
+ 
+-      item->SetY(content_y + (content.height - vertical_padding - item_geo.height()) / 2);
++      item->SetY(content_y + (contentLA.height - vertical_padding - item_geo.height()) / 2);
+     }
+ 
+-    rect_.setWidth(content.width);
+-    rect_.setHeight(content.height);
++    rect_.setWidth(contentLA.width);
++    rect_.setHeight(contentLA.height);
+ 
+     if (loop > 1)
+     {
+diff -Nur a/decorations/DecorationsWidgets.h b/decorations/DecorationsWidgets.h
+--- a/decorations/DecorationsWidgets.h	2016-07-05 18:21:18.000000000 +0800
++++ b/decorations/DecorationsWidgets.h	2016-07-15 13:38:20.637093775 +0800
+@@ -79,6 +79,7 @@
+ 
+   void Damage();
+   virtual void Draw(GLWindow*, GLMatrix const&, GLWindowPaintAttrib const&, CompRegion const&, unsigned mask) {}
++  bool rightAlligned = false;
+ 
+ protected:
+   virtual CompRect& InternalGeo() = 0;

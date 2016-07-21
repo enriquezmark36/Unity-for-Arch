@@ -86,7 +86,7 @@
      fi
    done
  
--  userdel ${GUEST_USER}
+-  userdel --force ${GUEST_USER}
 +  #deluser --system "$GUEST_USER"
 +  userdel "$GUEST_USER"
  }

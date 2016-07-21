@@ -3,7 +3,7 @@
 # Contributor: thn81 <root@scrat>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname}, repo=xenial
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
 # vercheck-launchpad: name=${pkgname}
 
 pkgname=indicator-messages
@@ -16,7 +16,7 @@ pkgdesc="A place on the user's desktop that collects messages that need a respon
 arch=(i686 x86_64)
 url="https://launchpad.net/indicator-messages"
 license=(GPL)
-depends=(accountsservice hicolor-icon-theme libindicator3)
+depends=(accountsservice hicolor-icon-theme)
 makedepends=(gobject-introspection gtk-doc intltool vala)
 groups=(unity)
 install=indicator-messages.install
@@ -42,7 +42,7 @@ build() {
   gtkdocize
   intltoolize -f
   autoreconf -vfi
-  ./configure --prefix=/usr --libexecdir=/usr/lib/${pkgname} --disable-static
+  ./configure --prefix=/usr --libexecdir=/usr/lib/ --disable-static
   make
 }
 

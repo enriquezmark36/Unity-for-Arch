@@ -1,19 +1,22 @@
 # Maintainer: Michael Healy <horsemanoffaith@gmail.com>
+# Contributor: ME <enriquezmark36@gmail.com>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=gtk+3.0, repo=xenial
+# vercheck-ubuntu: name=gtk+3.0, repo=yakkety
 # vercheck-archlinux: name=gtk3, repo=extra, arch=x86_64
 # vercheck-gnome: name=gtk+, majorver=3.18
 # vercheck-ppa: name=gtk+3.0, url=ppa:gnome3-team/gnome3-staging
 
-_use_ppa=true
+_use_ppa=false
 
 pkgname=gtk3-ubuntu
-_ppa_rel=1ubuntu1~wily1
-#_ubuntu_rel=1ubuntu1
-#_ubuntu_ver=3.18.6
-pkgver=3.18.6
-pkgrel=2
+_ppa_rel=0ubuntu1~yakkety1
+_ubuntu_rel=1ubuntu4
+_ubuntu_ver=3.18.9
+#pkgver=3.18.9
+#Gtk+ 3.20 is terrible for unity (period)
+pkgver=3.20.6
+pkgrel=3
 pkgdesc="GObject-based multi-platform toolkit (v3)"
 arch=(i686 x86_64)
 url="http://www.gtk.org/"
@@ -21,21 +24,23 @@ install=gtk3.install
 depends=(atk cairo gtk-update-icon-cache libcups libepoxy libxcursor libxinerama
          libxrandr libxi libxcomposite libxdamage pango shared-mime-info
          colord at-spi2-atk wayland libxkbcommon adwaita-icon-theme
-         json-glib rest)
+         json-glib rest wayland-protocols)
 makedepends=(gobject-introspection)
 provides=("gtk3=${pkgver}")
 conflicts=(gtk3)
 license=(LGPL)
-source=("http://ftp.gnome.org/pub/GNOME/sources/gtk+/${pkgver%.*}/gtk+-${pkgver}.tar.xz")
-
+source=("http://ftp.gnome.org/pub/GNOME/sources/gtk+/${pkgver%.*}/gtk+-${pkgver}.tar.xz"
+	unity-headerbar-maximized-mode.patch
+	unity-border-radius.patch)
+sha512sums=('597d25ec00f83c6ac77784f303458fad03d8ad017a53ee59e067fda61fa79fe6f34e46391f45844df7c4bbb2c8fa032b32f6d1c8f2f324c99681069f4d6d9be4'            'eafb65795074e1d8b723e576f12f94eb143f5a62318ced11136edb8e345776fb87d3418ea1cb1895106214d5713d28387dbf3f3e63b4dda8baa1960b278ab441'
+'565d6f714905d130ab18151602359ee3d995f926f4434b3bb8b99d7c358e612d9f0bfbb2acf1dc3b68b718764e8f33865f3f2f7f978d7fd3a8ef49a828a0f2d8')
 if [[ "${_use_ppa}" != "true" ]]; then
   source+=("https://launchpad.net/ubuntu/+archive/primary/+files/gtk+3.0_${_ubuntu_ver:-${pkgver}}-${_ubuntu_rel}.debian.tar.xz")
-else
+  sha512sums+=('c4f59b9221b5b36f688b83fb44fcbd00deed21387d5c582073c992e40bf1ffb8de0e1b3b0c29ccbbf9fff5b52653d653e6e18dc08bb015d8963581bd2d19a74f')
+else 
   source+=("http://ppa.launchpad.net/gnome3-team/gnome3-staging/ubuntu/pool/main/g/gtk+3.0/gtk+3.0_${_ppa_ver:-${pkgver}}-${_ppa_rel}.debian.tar.xz")
+  sha512sums+=('858ae4cca4382aad2031d2cf25f89f41f7258f16a98078c1a74f99d0d9600b6eaa51bebfc46b76bbdf5ca08508e8b4aa3653b194c556f59f3f04f1ae819e3036')
 fi
-
-sha512sums=('a606bfeb7e6991c9c367d6c93d04d70daed6c59b95d1ef14b971acb32b23e71894b0aef16b4c673e1cb2ae0fd08de3f65b7aa5512fd74253efe30f16b0dbac11'
-            '03296946286788d96572b7a17381191ee86d30736f652f678190b0c305ab70b10c65b0d732e213745bb24e44c3981c7dcafb1e83d0c519deef440fa25a36e00f')
 
 prepare() {
     cd "gtk+-${pkgver}"
@@ -53,7 +58,11 @@ prepare() {
     echo 'print-dialog-show-options-of-remote-dnssd-printers.patch' >> ../debian/patches/series
     # Unity-specific
     #echo '0001-Add-style-classes-to-the-title-buttons.patch' >> ../debian/patches/series
+    if [[ "${_use_ppa}" != "false" ]]; then
     echo 'message-dialog-restore-traditional-look-on-unity.patch' >> ../debian/patches/series
+    patch -p1  -i ${srcdir}/unity-border-radius.patch
+    patch -p1 -i ${srcdir}/unity-headerbar-maximized-mode.patch
+    fi	
     # Other
     echo 'bzg_gtkcellrenderer_grabbing_modifier.patch' >> ../debian/patches/series
     for i in $(grep -v '#' ../debian/patches/series); do
@@ -67,7 +76,6 @@ build() {
 
     autoreconf -vfi
 
-    #CXX=/bin/false ./configure \
     ./configure \
         --prefix=/usr \
         --sysconfdir=/etc \
@@ -80,7 +88,7 @@ build() {
     #https://bugzilla.gnome.org/show_bug.cgi?id=655517
     sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
 
-    make
+    make -j4
 }
 
 package() {

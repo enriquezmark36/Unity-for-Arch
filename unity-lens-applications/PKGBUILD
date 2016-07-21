@@ -3,37 +3,41 @@
 # Contributor: thn81 <root@scrat>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname}, repo=xenial
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
 # vercheck-launchpad: name=${pkgname}
 
 pkgname=unity-lens-applications
 _actual_ver=7.1.0
-_extra_ver=+15.10.20151002
+_extra_ver=+16.10.20160602
 pkgver=${_actual_ver}${_extra_ver/+/.}
 pkgrel=1
 pkgdesc="A daemon that exposes you applications with their usage statistics and status to Unity"
 arch=(i686 x86_64)
 url="https://launchpad.net/unity-lens-applications"
 license=(GPL)
-depends=(dconf gnome-menus libcolumbus libgee06 libunity libzeitgeist
+depends=(dconf gnome-menus libcolumbus libgee libunity libzeitgeist
          xapian-core zeitgeist-ubuntu)
 makedepends=(vala intltool)
 groups=(unity)
 install=${pkgname}.install
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity-lens-applications_${_actual_ver}${_extra_ver}.orig.tar.gz"
         10-no-db53.patch)
-sha512sums=('611aadbbbbe2eac110e1521d007aeb1cd014130d2edbca52055338aa0d10091c5cbc0de0654f91d136c1f65578474c82cf53412af67ddc1cb73d1c5f980f3b9c'
+sha512sums=('8c79538a42ac9b756d127f0ad593bddcf77d244fe2290fe47484e6f948b3b0709b31aac630ebfc0a54c2806988693c6f141c7761494cb5d2d78e5a989306ca07'
             'c0006f093e9f798590a7b98d6ba909a5ce684bc75aa570a61096c29b1870a7317a3d66720a2f959638d2072dded928fdc1e759f94dd14701e76b206f81718e9c')
 
 prepare() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
 
   # Remove check for db version 5.3
   patch -p1 -i ../10-no-db53.patch
 }
 
 build() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
 
   aclocal --install --force
   autoreconf -vfi
@@ -49,7 +53,9 @@ build() {
 }
 
 package() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
 
   make DESTDIR="${pkgdir}/" install
 

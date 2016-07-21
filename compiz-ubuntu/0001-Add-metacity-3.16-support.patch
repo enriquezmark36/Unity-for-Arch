@@ -1,26 +1,7 @@
-From bf3acf4f1b6505961f7ed2bc954b6bbd0dc23eca Mon Sep 17 00:00:00 2001
-From: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
-Edited: Michael Healy <horsemanoffaith@gmail.com>
-Date: Fri, 1 May 2015 16:37:22 -0400
-Date Edited: 14 Nov 2015 14:27:00 -0800
-Subject: [PATCH 1/2] Add metacity 3.16 support
-
-Based on revision 3951 from
-https://code.launchpad.net/~albertsmuktupavels/compiz/gwd-support-metacity-3-16
----
- gtk/window-decorator/CMakeLists.txt                |    1 +
- .../gwd-settings-storage-gsettings.c               |   10 ++++++++++
- gtk/window-decorator/metacity-3-16.c               | 1555 ++++++++++++++++++++
- gtk/window-decorator/metacity.c                    |    4 +++-
-  11 files changed, 1697 insertions(+), 26 deletions(-)
- create mode 100644 gtk/window-decorator/metacity-3-16.c
- create mode 100644 gtk/window-decorator/tests/org.gnome.metacity.gschema.xml
-
-diff --git a/gtk/window-decorator/CMakeLists.txt b/gtk/window-decorator/CMakeLists.txt
-index 06288a6..bfa914e 100644
---- a/gtk/window-decorator/CMakeLists.txt
-+++ b/gtk/window-decorator/CMakeLists.txt
-@@ -99,6 +99,7 @@ if (USE_GTK)
+diff -Nur a/gtk/window-decorator/CMakeLists.txt b/gtk/window-decorator/CMakeLists.txt
+--- a/gtk/window-decorator/CMakeLists.txt	2016-04-15 05:30:40.000000000 +0000
++++ b/gtk/window-decorator/CMakeLists.txt	2016-04-23 02:21:19.602558525 +0000
+@@ -95,6 +95,7 @@
  		    gdk.c
  		    switcher.c
  		    metacity.c
@@ -28,10 +9,149 @@ index 06288a6..bfa914e 100644
  		    events.c
  		    forcequit.c
  		    tooltip.c
-diff --git a/gtk/window-decorator/gwd-settings-storage-gsettings.c b/gtk/window-decorator/gwd-settings-storage-gsettings.c
-index 300c4fc..f2cc364 100644
---- a/gtk/window-decorator/gwd-settings-storage-gsettings.c
-+++ b/gtk/window-decorator/gwd-settings-storage-gsettings.c
+diff -Nur a/gtk/window-decorator/CMakeLists.txt.orig b/gtk/window-decorator/CMakeLists.txt.orig
+--- a/gtk/window-decorator/CMakeLists.txt.orig	1970-01-01 00:00:00.000000000 +0000
++++ b/gtk/window-decorator/CMakeLists.txt.orig	2016-04-15 05:30:40.000000000 +0000
+@@ -0,0 +1,136 @@
++if (USE_GTK)
++
++    if (COMPIZ_BUILD_WITH_RPATH)
++	set (CMAKE_INSTALL_RPATH ${libdir})
++    endif (COMPIZ_BUILD_WITH_RPATH)
++
++    include_directories (
++        ${CMAKE_CURRENT_SOURCE_DIR}
++	${compiz_SOURCE_DIR}/include
++	${CMAKE_BINARY_DIR}/gtk
++	${GTK_WINDOW_DECORATOR_INCLUDE_DIRS}
++	${METACITY_INCLUDE_DIRS}
++	${DBUS_GLIB_INCLUDE_DIRS}
++    )
++
++    add_definitions (
++	-DHAVE_CONFIG_H
++	-DALL_LINGUAS=\"${ALL_LINGUAS}\"
++	-DLOCALEDIR=\\\"${datadir}/locale\\\"
++    )
++
++    link_directories (
++	${COMPIZ_LINK_DIRS}
++    )
++
++    add_library (gtk_window_decorator_metacity_window_decoration_util
++		 ${CMAKE_CURRENT_SOURCE_DIR}/gwd-metacity-window-decoration-util.c)
++
++    add_library (gtk_window_decorator_cairo_window_decoration_util
++		 ${CMAKE_CURRENT_SOURCE_DIR}/gwd-cairo-window-decoration-util.c)
++
++    add_library (gtk_window_decorator_settings_interface STATIC
++		 ${CMAKE_CURRENT_SOURCE_DIR}/gwd-settings-interface.c)
++
++    add_library (gtk_window_decorator_settings STATIC
++		 ${CMAKE_CURRENT_SOURCE_DIR}/gwd-settings.c)
++
++    add_library (gtk_window_decorator_settings_storage_interface STATIC
++		 ${CMAKE_CURRENT_SOURCE_DIR}/gwd-settings-storage-interface.c)
++
++    add_library (gtk_window_decorator_settings_writable_interface STATIC
++		 ${CMAKE_CURRENT_SOURCE_DIR}/gwd-settings-writable-interface.c)
++
++    add_library (gtk_window_decorator_settings_notified_interface
++		 ${CMAKE_CURRENT_SOURCE_DIR}/gwd-settings-notified-interface.c)
++
++    set (GTK_WINDOW_DECORATOR_ADDITIONAL_LIBRARIES
++	 gtk_window_decorator_settings_notified_interface
++	 gtk_window_decorator_settings_interface
++	 gtk_window_decorator_settings_writable_interface
++	 gtk_window_decorator_settings
++	 gtk_window_decorator_settings_storage_interface
++	 gtk_window_decorator_metacity_window_decoration_util
++	 gtk_window_decorator_cairo_window_decoration_util)
++
++    if (USE_GSETTINGS)
++	add_definitions (-DUSE_GSETTINGS)
++	add_library (gtk_window_decorator_settings_storage_gsettings STATIC
++		     ${CMAKE_CURRENT_SOURCE_DIR}/gwd-settings-storage-gsettings.c)
++
++	compiz_pkg_check_modules (GSETTINGS gio-2.0 glib-2.0)
++
++	target_link_libraries (gtk_window_decorator_settings_storage_gsettings
++			       ${GSETTINGS_LIBRARIES})
++
++	list (APPEND GTK_WINDOW_DECORATOR_ADDITIONAL_LIBRARIES
++	      gtk_window_decorator_settings_storage_gsettings)
++
++	set (_gwd_gschema_name org.compiz.gwd)
++	set (_gwd_gschema_filename ${_gwd_gschema_name}.gschema.xml)
++	set (_gwd_gschema_filepath ${CMAKE_CURRENT_SOURCE_DIR}/${_gwd_gschema_filename})
++	set (_gwd_gschema_generated_location ${CMAKE_BINARY_DIR}/generated/glib-2.0/schemas/${_gwd_gschema_filename})
++	set (_gwd_gschema_dest ${CMAKE_INSTALL_PREFIX}/share/glib-2.0/schemas/)
++
++	add_custom_command (OUTPUT ${_gwd_gschema_generated_location}
++			    COMMAND cp -r ${_gwd_gschema_filepath} ${_gwd_gschema_generated_location}
++			    DEPENDS ${_gwd_gschema_filepath}
++			    VERBATIM)
++
++	add_custom_target (compiz_gwd_gsettings_org_compiz_gwd_schema ALL
++			   DEPENDS ${_gwd_gschema_generated_location})
++
++	add_gsettings_schema_to_recompilation_list (compiz_gwd_gsettings_org_compiz_gwd_schema)
++
++	compiz_install_gsettings_schema (${_gwd_gschema_generated_location}
++					 ${_gwd_gschema_dest})
++    endif (USE_GSETTINGS)
++
++    add_executable (gtk-window-decorator
++		    gtk-window-decorator.c
++		    blurprops.c
++		    decorprops.c
++		    cairo.c
++		    frames.c
++		    gdk.c
++		    switcher.c
++		    metacity.c
++		    events.c
++		    forcequit.c
++		    tooltip.c
++		    actionmenu.c
++		    settings.c
++		    util.c
++		    wnck.c
++		    decorator.c
++		    ${CMAKE_CURRENT_SOURCE_DIR}/gwd-settings-xproperty-storage.c
++		    ${CMAKE_CURRENT_SOURCE_DIR}/gwd-settings-notified.c
++		    ${gwd_schema}
++    )
++
++    add_dependencies (gtk-window-decorator decoration)
++
++    if (USE_METACITY)
++	set (metacitylibs ${METACITY_LIBRARIES})
++    endif (USE_METACITY)
++
++
++    target_link_libraries (
++	gtk-window-decorator
++	decoration
++	${GTK_WINDOW_DECORATOR_LIBRARIES}
++	${DBUS_GLIB_LIBRARIES}
++	${metacitylibs}
++	${GTK_WINDOW_DECORATOR_ADDITIONAL_LIBRARIES}
++    )
++
++    install (
++	TARGETS gtk-window-decorator
++	DESTINATION ${exec_prefix}
++    )
++
++    if (COMPIZ_BUILD_TESTING)
++	add_subdirectory (tests)
++    endif (COMPIZ_BUILD_TESTING)
++
++endif (USE_GTK)
+diff -Nur a/gtk/window-decorator/gwd-settings-storage-gsettings.c b/gtk/window-decorator/gwd-settings-storage-gsettings.c
+--- a/gtk/window-decorator/gwd-settings-storage-gsettings.c	2016-04-15 05:30:40.000000000 +0000
++++ b/gtk/window-decorator/gwd-settings-storage-gsettings.c	2016-04-23 02:35:17.663944371 +0000
 @@ -17,6 +17,9 @@
   *
   * Authored By: Sam Spilsbury <sam.spilsbury@canonical.com>
@@ -40,31 +160,11 @@ index 300c4fc..f2cc364 100644
 +#include <config.h>
 +#endif
  #include <glib-object.h>
+ #include <glib.h>
  
- #include <gio/gio.h>
-@@ -150,10 +153,17 @@
- 
-     use_metacity_theme = g_settings_get_boolean (priv->gwd, ORG_COMPIZ_GWD_KEY_USE_METACITY_THEME);
- 
-+#ifdef HAVE_METACITY_3_16_0
-     if (!priv->metacity)
-         return FALSE;
- 
-     theme = g_settings_get_string (priv->metacity, ORG_GNOME_METACITY_THEME);
-+#else
-+     if (!priv->desktop)
-+        return FALSE;
-+
-+    theme = g_settings_get_string (priv->desktop, ORG_GNOME_DESKTOP_WM_PREFERENCES_THEME);
-+#endif
- 
-     return gwd_settings_writable_metacity_theme_changed (priv->writable,
-                                                          use_metacity_theme,
-diff --git a/gtk/window-decorator/metacity-3-16.c b/gtk/window-decorator/metacity-3-16.c
-new file mode 100644
-index 0000000..a56085a
---- /dev/null
-+++ b/gtk/window-decorator/metacity-3-16.c
+diff -Nur a/gtk/window-decorator/metacity-3-16.c b/gtk/window-decorator/metacity-3-16.c
+--- a/gtk/window-decorator/metacity-3-16.c	1970-01-01 00:00:00.000000000 +0000
++++ b/gtk/window-decorator/metacity-3-16.c	2016-04-23 02:21:19.606558544 +0000
 @@ -0,0 +1,1555 @@
 +/*
 + * Copyright © 2006 Novell, Inc.
@@ -1621,11 +1721,10 @@ index 0000000..a56085a
 +
 +#endif /* HAVE_METACITY_3_16_0 */
 +#endif /* USE_METACITY */
-diff --git a/gtk/window-decorator/metacity.c b/gtk/window-decorator/metacity.c
-index 2487319..0af4193 100644
---- a/gtk/window-decorator/metacity.c
-+++ b/gtk/window-decorator/metacity.c
-@@ -26,7 +26,8 @@
+diff -Nur a/gtk/window-decorator/metacity.c b/gtk/window-decorator/metacity.c
+--- a/gtk/window-decorator/metacity.c	2016-04-15 05:30:40.000000000 +0000
++++ b/gtk/window-decorator/metacity.c	2016-04-23 02:21:19.606558544 +0000
+@@ -26,6 +26,7 @@
  #include "gtk-window-decorator.h"
  
  #ifdef USE_METACITY
@@ -1633,14 +1732,10 @@ index 2487319..0af4193 100644
  
  MetaButtonLayout meta_button_layout;
  
- static gboolean
-@@ -1550,4 +1638,5 @@ meta_update_border_extents (decor_frame_t *frame)
+@@ -1550,4 +1551,5 @@
      gwd_decor_frame_unref (frame);
  }
  
 -#endif
 +#endif /* HAVE_METACITY_3_16_0 */
 +#endif /* USE_METACITY */
-
---
-2.3.7

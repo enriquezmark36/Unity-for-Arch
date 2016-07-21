@@ -3,14 +3,14 @@
 # Contributor: thn81 <root@scrat>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname}, repo=xenial
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
 # vercheck-launchpad: name=${pkgname}
 
 pkgname=nux
 _actual_ver=4.0.8
-_extra_ver=+16.04.20151210
+_extra_ver=+16.10.20160705.1
 pkgver=${_actual_ver}${_extra_ver/+/.}
-pkgrel=1
+pkgrel=2
 pkgdesc="Graphical user interface toolkit for applications that mixes OpenGL hardware acceleration with high quality visual rendering"
 arch=(i686 x86_64)
 url="https://launchpad.net/nux"
@@ -25,22 +25,23 @@ options=(!emptydirs)
 install=${pkgname}.install
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/nux_${_actual_ver}${_extra_ver}.orig.tar.gz"
         0001_autoconf.patch
-        01_blacklist_llvmpipe.patch
         50_check_unity_support)
-sha512sums=('e0eca096607c07c219010c32ac6f2083c2fd0339ea05ca7bd3a1af8b0debe7a7d4149b4cf1eed31e8b0cca95a76b643906680f6a3bbab5f089129e3574a068bd'
+sha512sums=('d50d7f772caa91b3d59b9be5c42cdecc3bc30fc23f172d646ddff3ce2bd5c61226aa845da1d4a0a95294387273e13009ef499d1d41f27888ac45b28a2412d968'
             '84d41b3ca21457f141d5203b1483f26190f161858d97176a04d0c2cafe6d01ea32f87fe6dc7cbe9234389e627669e34331ad400386733d5363d0145cbab63bb9'
-            'a6122d47bef574df7e4f3aa3ddff34ca7a6e291878665f3dfdbb9ea071394180ab31aadcb79efd53ebb1ec2a86a15d53c9394478305c3fd5f10ece049265b374'
             '1e82b11357f9db45fa6fff002cef11acaf53a8381e2bc28b84e9e0300502c0b1922d9273b44d4cfbbd51d004a9eb1eb2e780db7a39e2d9153c9c4efafb9314a9')
 
 prepare() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
 
   patch -p1 -i ../0001_autoconf.patch
-  patch -p1 -i ../01_blacklist_llvmpipe.patch
 }
 
 build() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
 
   export CFLAGS+=" -Wno-error=unused-function"
   export CXXFLAGS+=" -Wno-error=unused-function"
@@ -53,7 +54,9 @@ build() {
 }
 
 package() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
 
   make DESTDIR="${pkgdir}" install
 

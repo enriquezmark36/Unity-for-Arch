@@ -1,0 +1,37 @@
+# Houston, we have a problem.
+# This package is required but dropped on Feb 2016.
+# Original Maintainer: kiefer <jorgelmadrid@gmail.com>
+# Contributer: Alessio Sergi <asergi at archlinux dot us>
+
+pkgname=libzeitgeist
+pkgver=0.3.18
+_ubuntu_rel=1ubuntu3
+pkgrel=1
+pkgdesc="Zeitgeist client library with Ubuntu patches"
+arch=('i686' 'x86_64')
+url="https://launchpad.net/libzeitgeist"
+license=('LGPL2.1')
+depends=('glib2')
+optdepends=("zeitgeist: zeitgeist framework")
+options=('!libtool')
+source=(https://launchpad.net/ubuntu/+archive/primary/+files/${pkgname}_${pkgver}.orig.tar.gz
+	https://launchpad.net/ubuntu/+archive/primary/+files/${pkgname}_${pkgver}-${_ubuntu_rel}.debian.tar.xz)
+sha512sums=('6ad3f0ed74935c20ce23d80208c5a787e4db2e2d58ae5036c6681c3d531e20cc0981be961d66a408a7e1b03909af0212693feddc515240d724acbd5ac5c8cf6e'
+            '393a3b019b8dccb93dc3a733465c5fab7d3b171bc5bd03f07b982e04be387f5addf558bda267b2d30353e8a101987bf2cc0a17b0cbd4c2fb1507984c02b1aa0b')
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+  for i in $(grep -v '#' ../debian/patches/series); do
+    msg "Applying ${i} ..."
+    patch -p1 -i "../debian/patches/${i}"
+  done
+
+  ./configure --prefix=/usr
+  make
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+}

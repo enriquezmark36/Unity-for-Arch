@@ -3,19 +3,20 @@
 # Contributor: thn81 <root@scrat>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgbase%-*}, repo=xenial
+# vercheck-ubuntu: name=${pkgbase%-*}, repo=yakkety
 # vercheck-archlinux: name=${pkgbase%-*}, repo=extra, arch=x86_64
 # vercheck-gnome: name=${pkgbase%-*}, majorver=3.18
 # vercheck-ppa: name=${pkgbase%-*}, url=ppa:gnome3-team/gnome3-staging
 
-_use_ppa=true
+_use_ppa=false
 
 pkgbase=nautilus-ubuntu
 pkgname=(nautilus-ubuntu libnautilus-extension-ubuntu)
-#_ubuntu_rel=0ubuntu1
-#_ubuntu_ver=3.18.5
-_ppa_rel=0ubuntu1~xenial1
-pkgver=3.18.5
+_ubuntu_rel=0ubuntu4
+_ubuntu_ver=3.18.4.is.3.14.3
+_ppa_ver=3.20.1
+_ppa_rel=0ubuntu1~yakkety2
+pkgver=3.14.3
 pkgrel=1
 pkgdesc="GNOME and Unity file manager"
 arch=(i686 x86_64)
@@ -27,14 +28,15 @@ url="http://www.gnome.org"
 options=(!emptydirs)
 install=nautilus.install
 source=("http://ftp.gnome.org/pub/gnome/sources/nautilus/${pkgver%.*}/nautilus-${pkgver}.tar.xz")
+sha512sums=('83f92b9cd620e26f0d4b97a81068fde1810d787193c8b340c61b14887c33b53e4b30ab3968cfb511c87cb6a72e5cc2a631ea2b3dbf29d53dd6fe647ceb1ad50d')
+
 if [[ "${_use_ppa}" == "true" ]]; then
     source+=("https://launchpad.net/~gnome3-team/+archive/ubuntu/gnome3-staging/+files/nautilus_${_ppa_ver:-${pkgver}}-${_ppa_rel}.debian.tar.xz")
+    sha512sums+=('b0fecf30230509d31e218a47113b64209ac47d4719a823ec3630180639789d5801571df436acac97d0191967b9f3497f569c547ed3c07fa93dc62217d656d7c3')
 else
     source+=("https://launchpad.net/ubuntu/+archive/primary/+files/nautilus_${_ubuntu_ver:-${pkgver}}-${_ubuntu_rel}.debian.tar.xz")
+    sha512sums+=('2de3fe48f487cac96339067287d98ebf6970f030075cc374a42271bc620a3a1f6b8a482c3cf797c3fe8dcf4df847f7950fc9b52e5fbe7b254ab79ab4d35ffa0a')
 fi
-
-sha512sums=('60ec5c1eb7ba90caed2f536a0fd78d8686b6f7372db36d526d634d727ac03719edee894ca0ff1d90a0974cc0bc76f05bf0f8d4db22845ae3585470aa8e7b8ca6'
-            'deaf6a9252a715500b9e3b2d46e15ab2b28b18f49bdcc6e066dcc4d690f55f5bcbe09d7147a956516ad4621c8bc241164ea123db6cd9f2d50897831159bb7267')
 
 prepare() {
   cd "${pkgname%-*}-${pkgver}"
@@ -68,7 +70,7 @@ build() {
     --disable-update-mimedb \
     --disable-packagekit \
     --disable-schemas-compile \
-    --disable-appindicator \
+    --disable-selinux \
     --enable-unity
 
   make

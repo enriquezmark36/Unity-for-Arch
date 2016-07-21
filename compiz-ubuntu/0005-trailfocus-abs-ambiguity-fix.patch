@@ -1,0 +1,12 @@
+diff -urN a/plugins/trailfocus/src/trailfocus.cpp b/plugins/trailfocus/src/trailfocus.cpp
+--- a/plugins/trailfocus/src/trailfocus.cpp	2016-07-05 09:10:51.000000000 +0800
++++ b/plugins/trailfocus/src/trailfocus.cpp	2016-07-15 13:13:54.850083705 +0800
+@@ -195,7 +195,7 @@
+ 	}
+ 	else
+ 	{
+-	    distance = abs (cur->activeNum () - best->activeNum ());
++	    distance = abs ((int)(cur->activeNum () - best->activeNum ()));
+ 	    if (distance < bestDist)
+ 	    {
+ 		best     = cur;

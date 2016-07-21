@@ -42,7 +42,6 @@ To compile from source, just build all of the packages in the following order:
 | libindicate-qt                   | Qt 4 bindings for libindicate              |
 | libappindicator-ubuntu           | Library to export menu bar to Unity        |
 | unity-gtk-module                 | Application menu module for GTK+           |
-| icu55                            | Provides needed icu55 library files        |
 | dee-ubuntu                       | Model to synchronize instances over DBus   |
 | libunity                         | Library for integrating with Unity         |
 | libunity-misc                    | Differently licensed stuff for Unity       |
@@ -52,13 +51,13 @@ To compile from source, just build all of the packages in the following order:
 | geonames                         | Parse and query the geonames database dump |
 | gsettings-desktop-schemas-ubuntu | Shared GSettings schemas for the desktop   |
 | gnome-settings-daemon-ubuntu     | Daemon handling the GNOME session settings |
+| gsettings-ubuntu-schemas	   | GSettings schemas made by and for Ubuntu   |
 | gnome-session-ubuntu             | GNOME Session Manager                      |
 | gnome-screensaver-ubuntu         | GNOME screen saver and locker              |
 | unity-settings-daemon            | Daemon handling the Unity session settings |
 | unity-control-center             | Utilities to configure the Unity desktop   |
 | properties-cpp                   | C++11 library providing properties/signals |
 | lightdm-ubuntu                   | Cross-desktop lightweight display manager  |
-| libgee06                         | Legacy GObject collection library          |
 | indicator-application            | Takes menus and puts them in the panel     |
 | indicator-appmenu                | Indicator to host the menus from apps      |
 | indicator-datetime               | Indicator to show the date and time        |
@@ -74,13 +73,13 @@ To compile from source, just build all of the packages in the following order:
 | libqtdee                         | Qt5 bindings for dee                       |
 | hud                              | Backend for the Unity HUD                  |
 | network-manager-applet-ubuntu    | NetworkManager applet w/indicator support  |
-| overlay-scrollbar                | Overlay scrollbars for GTK+2 and GTK+3     |
 | frame                            | Open Input Framework Frame Library         |
 | grail                            | Gesture recognition and instantiation lib. |
 | geis                             | Implementation of the GEIS interface       |
 | nux                              | An OpenGL toolkit for Unity                |
 | unity-asset-pool                 | Design assets for Unity                    |
 | zeitgeist-ubuntu                 | Service for logging user activities        |
+| libzeigeist			   | Library for logging user activities 	|
 | nautilus-ubuntu                  | File manager for GNOME and Unity           |
 | unity-lens-applications          | Unity lens for searching applications      |
 | unity-lens-files                 | Unity lens for searching files             |

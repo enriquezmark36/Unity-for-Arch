@@ -3,28 +3,21 @@
 # Some comments are taken from the Ubuntu packaging files
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname%-*}, repo=xenial
+# vercheck-ubuntu: name=${pkgname%-*}, repo=yakkety
 # vercheck-launchpad: name=${pkgname%-*}
-
-_use_ppa=false
 
 pkgname=compiz-ubuntu
 
 
-_actual_ver=0.9.12.2
-_extra_ver=+16.04.20151211
+_actual_ver=0.9.13.0
+_extra_ver=+16.10.20160705
 
-if [[ "${_use_ppa}" != true ]]; then
-  _ubuntu_rel=0ubuntu1
-  _archive_dir="compiz-${_actual_ver}${_extra_ver}"
-else
-  _ppa_rel=0ubuntu3\+ppa1
-  _archive_dir=compiz.vivid
-fi
+_ubuntu_rel=0ubuntu1
+_archive_dir="compiz-${_actual_ver}${_extra_ver}"
 
 pkgver=${_actual_ver}${_extra_ver/+/.}
 
-pkgrel=1
+pkgrel=3
 pkgdesc="OpenGL window and compositing manager"
 url="http://www.compiz.org/"
 arch=(i686 x86_64)
@@ -43,31 +36,27 @@ conflicts=(compiz metacity-ubuntu)
 provides=(compiz-core compiz)
 install=compiz-ubuntu.install
 
-if [[ "${_use_ppa}" != true ]]; then
-  source=("https://launchpad.net/ubuntu/+archive/primary/+files/compiz_${_actual_ver}${_extra_ver}.orig.tar.gz"
-          "https://launchpad.net/ubuntu/+archive/primary/+files/compiz_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff.gz")
-else
-  source=("https://launchpad.net/~townsend/+archive/ubuntu/compiz-nvidia-refresh-test/+files/compiz_${_actual_ver}${_extra_ver}-${_ppa_rel}.tar.gz")
-fi
-
-source+=(compiz.reset
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/compiz_${_actual_ver}${_extra_ver}.orig.tar.gz"
+	 "https://launchpad.net/ubuntu/+archive/primary/+files/compiz_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff.gz"
+	 compiz.reset
          0001-Fix-cmake-install-directory.patch
          0002-Fix-python-install-command.patch
          0003-Use-Python-2.patch
          0004-Disable-Werror.patch
-         0001-Add-metacity-3.16-support.patch)
-sha512sums=('ebe2f566c43ab3be76703164965cb2d3f099521e1d66c9fa3696f274b8c7e9e0db1145fce288ff26d60605da9be2921a8c1eac3b477462a8facc36b7793dfcdb'
-            '2b2b4e3db57e79a9474c2c06da4eff0df19e5e2379488e2cffe1b49fb65bfff6e70d128d5efeedd7aa88ffdfb04e3da417292debbb2afa90a3125f42455c6f6d'
+	 0005-trailfocus-abs-ambiguity-fix.patch)
+sha512sums=('c0473233bf5a2b3ed58d9c8a4017d6a911c0d5235ea71f963686b9287562728ca152d03ded0e9f16ba7f694f36121b7e0f73da6897175b938cda81fcc4ddacbc'
+            'e8fbd7db4421016bde450f2a22945d21973cbbe5c8dbac6d97e1e287152d9de1591bb1ede31734f74a93f87ee2e628760a462380ccd819cf823dba5d38ee1570'
             '5f4b38c5fe3af9de0fe7897b9fdd04184dff9bf448f21ef19d9ae1b224c972061d8b183aa01cf8dcdf4fb37bb3466233ce53a6dfbbe51b0ff04f17568d2dc7ff'
             '94b139716f74cfb26276dbc0c5a73aa1d6f591e888b976210e7523de83e782a76992350d08b8054c8a04eeeb5273130cdeaaffd155ee3e9800921b7541cbdd82'
             '1107fd002e1123fd52535f0016ee241c12d719a62c0a301a97338a230a73267b43982e0d23250ecac09b3a4b0ae78710fa9e04d84d5729ee6ac7293935579706'
             '247c393a1c84becea57ccae6e1c6ed8c0eae3f874627677f3944dca0197565b6b12912357ad4f025a5a876f294338cb79d498484392aabaf4bfa22e5a2c08b24'
             '1ec09ac2bbfe242670f9b51842c58bbe9b379f7a1bfeec12157b5ba3ea3142c88eb62462968f4378c64d75fa4148dca6123583399f93e2b6990c094d386f0951'
-            'a89802529692f618fd00135c5d15e757f0b83ee988b968811c799acc2d805b17c2f38f1960f7fe2d5facc0f3d6920cc5c809b28e000df9c262cce3a3380f9d7a')
+            '327fdc87ae1fef3acefd70984b630eaebbd0b3ad3ea3e887af856928f31f69eafd7a5300dce2e02f6b2aab662fee97414df81b5e5809188f871d7a150233ee6d')
 
 prepare() {
-  cd "${_archive_dir}"
-
+  if [ -d ${_archive_dir} ]; then
+     cd "${_archive_dir}"
+  fi
   # Fix the directory for FindCompiz.cmake and FindCompizConfig.cmake
   patch -p1 -i ../0001-Fix-cmake-install-directory.patch
 
@@ -83,15 +72,19 @@ prepare() {
   patch -p1 -i ../0004-Disable-Werror.patch
 
   # Add support for metacity 3.16's API
-  patch -p1 -i ../0001-Add-metacity-3.16-support.patch
+  #patch -p1 -i ../0001-Add-metacity-3.16-support.patch
   
+  #Workaround to compile the trailfocus plugin
+  patch -p1 -i ../0005-trailfocus-abs-ambiguity-fix.patch
+
   # Apply Ubuntu patches
-    patch -p1 -i ../compiz_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff
+    patch -p1 -i ./compiz_${_actual_ver}${_extra_ver}-${_ubuntu_rel}.diff
 }
 
 build() {
-  cd "${_archive_dir}"
-
+  if [ -d ${_archive_dir} ]; then
+     cd "${_archive_dir}"
+  fi
   # Fix build on i686
   export CXXFLAGS+=" -lc"
 
@@ -112,7 +105,8 @@ build() {
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCOMPIZ_BUILD_WITH_RPATH=FALSE \
     `# -DCMAKE_BUILD_TYPE=RelWithDebInfo` \
-    -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_BUILD_TYPE=Release \
+    `# -DCMAKE_BUILD_TYPE=Debug` \
     -DCOMPIZ_PACKAGING_ENABLED=TRUE \
     -DUSE_GSETTINGS=ON \
     -DUSE_GCONF=OFF \
@@ -131,7 +125,10 @@ build() {
 }
 
 package() {
-  cd "${_archive_dir}/build"
+  if [ -d ${_archive_dir} ]; then
+     cd "${_archive_dir}"
+  fi
+  cd "./build"
   make install DESTDIR="${pkgdir}"
 
   # Stupid findcompiz_install needs COMPIZ_DESTDIR and install needs DESTDIR
@@ -152,9 +149,13 @@ package() {
   install -dm755 "${pkgdir}/etc/X11/xinit/xinitrc.d/"
   install -dm755 "${pkgdir}/etc/compizconfig/upgrades/"
   install -dm755 "${pkgdir}/usr/share/gnome/wm-properties/"
-
+  if [ -d ${_archive_dir} ]; then
+     cd "${_archive_dir}"
+  else
+     cd ${srcdir}
+  fi
   # Install manual pages
-  install -m644 ../debian/{ccsm,compiz,gtk-window-decorator}.1 \
+  install -m644 ./debian/{ccsm,compiz,gtk-window-decorator}.1 \
     "${pkgdir}/usr/share/man/man1/"
 
   # Window manager desktop file for GNOME
@@ -163,24 +164,24 @@ package() {
     "${pkgdir}/usr/share/gnome/wm-properties/"
 
   # Install X11 startup script
-  install -m755 ../debian/65compiz_profile-on-session \
+  install -m755 ./debian/65compiz_profile-on-session \
     "${pkgdir}/etc/X11/xinit/xinitrc.d/"
 
   # Unity Compiz profile configuration file
-  install -m644 ../debian/unity.ini "${pkgdir}/etc/compizconfig/"
+  install -m644 ./debian/unity.ini "${pkgdir}/etc/compizconfig/"
 
   # Install Compiz profile configuration file
-  install -m644 ../debian/compizconfig "${pkgdir}/etc/compizconfig/config"
+  install -m644 ./debian/compizconfig "${pkgdir}/etc/compizconfig/config"
 
   # Compiz profile upgrade helper files for ensuring smooth upgrades from older
   # configuration files
-  pushd ../debian/profile_upgrades/
+  pushd ./debian/profile_upgrades/
   find . -type f -name '*.upgrade' -exec \
     install -m644 {} "${pkgdir}"/etc/compizconfig/upgrades/{} \;
   popd
 
   install -dm755 "${pkgdir}/usr/lib/compiz/migration/"
-  pushd ../postinst/convert-files/
+  pushd ./postinst/convert-files/
   find . -type f -name '*.convert' -exec \
     install -m644 {} "${pkgdir}"/usr/lib/compiz/migration/{} \;
   popd
@@ -188,13 +189,13 @@ package() {
   # Install keybinding files
   install -dm755 "${pkgdir}/usr/share/gnome-control-center/keybindings/"
   install -dm755 "${pkgdir}/usr/share/unity-control-center/keybindings/"
-  find ../*/gtk/gnome/ -name *.xml -exec install {} \
+  find ./*/gtk/gnome/ -name *.xml -exec install {} \
     "${pkgdir}/usr/share/gnome-control-center/keybindings/" \;
-  find ../*/gtk/gnome/ -name *.xml -exec install {} \
+  find ./*/gtk/gnome/ -name *.xml -exec install {} \
     "${pkgdir}/usr/share/unity-control-center/keybindings/" \;
 
   # Default GSettings settings
-  install -m644 ../debian/compiz-gnome.gsettings-override \
+  install -m644 ./debian/compiz-gnome.gsettings-override \
     "${pkgdir}/usr/share/glib-2.0/schemas/10_compiz-ubuntu.gschema.override"
 
   # Install script for resetting all of Compiz's settings

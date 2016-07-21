@@ -1,11 +1,11 @@
 # Maintainer: Michael Healy <horsemanoffaith@gmail.com>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname}, repo=xenial
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
 
 pkgname=unity-settings-daemon
 _actual_ver=15.04.1
-_extra_ver=+16.04.20160121
+_extra_ver=+16.10.20160615
 pkgver=${_actual_ver}${_extra_ver/\+/.}
 pkgrel=1
 pkgdesc="Unity Settings Daemon"
@@ -14,7 +14,7 @@ url="https://launchpad.net/unity-settings-daemon"
 license=(GPL)
 groups=(unity)
 depends=(gnome-settings-daemon-ubuntu gsettings-desktop-schemas-ubuntu fcitx
-         gperf hicolor-icon-theme ibus libappindicator3 libcanberra-pulse
+         gperf hicolor-icon-theme ibus libcanberra-pulse
          libnotify librsvg libsystemd libwacom libxkbfile mesa pulseaudio
          pulseaudio-alsa upower)
 makedepends=(intltool xf86-input-wacom libxslt docbook-xsl python2)
@@ -24,29 +24,35 @@ unity=settings-install-daemon.install
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity-settings-daemon_${_actual_ver}${_extra_ver}.orig.tar.gz"
         0001-Remove-accountsservice-dependency.patch
         0002-Add-gnome-settings-daemon-3.12-rfkill-plugin.patch
-        0003-Use-GNOME-3.16-deprecated-schemas.patch)
-sha512sums=('ee93e1b34389cdb4ae5370eb13f5741f145a399f836f0925b57f34b297e4de1235baf9cce729c61b812a2a5d71a038764b8b3363af8184cca080165c0ff3180a'
-            '38e49274e9e12dabb7f5d6a2fd058aad94c749e46e44030cd6c550e544f9f0ef30f56effa8dd55b46a208221d04b179b3f16d4894e0e887820685b4c7b8273f2'
-            '3cb2735c15c3acb4bcbd78da1c31dddda2f707b48fec46294a705a7688d277040aa1f7891b8c56cbd73b4f138805006bd0a2d569b7b4ac8f4ac3f297d5abb6ac'
-            '9d036512105a20f1a2f045a7c6b87faedacb25748239babe3f79514c7899af74ab0e56e8d184406d183cdb2be6518f37681b03cdb6ce20901f0381b6bd0d7d68')
+        0003-Remove-gsdscreensaver-undefined-refs.patch)
+sha512sums=('4266c0ed8f9c89f3f3c24f6f8b76fbb4774eafab78b3c3c51e62b5a6820ebe9dcebe9c11110e6debda11592a2fe959ba72f407c562276d23be064429ef0795f6'
+            'd842979cbb4d999d0af0f372cfa1a90aab65dd3aad02b26fc4420cf8a3e323cbf4614b3683b539e1068baa12bb8dc13aa3322d17d40447f5cb4dd9ebd07baf48'
+            'd45d84e1ae0823ead75c780125a21635cc1732c640354cfdd54d986879eb5026b0bab0cf7562483bc81a7be0b386fb79d467ef5dca72f494358292aae23737d3'
+            '4af29363028fc30310ab68583da12f336c8af6304ee08be57688f3eb48a29ecf0d0c178681481ab575dbdc5ba93c804d8b218380d8b3198ac519305eab84eb1a')
 
 prepare() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}"
-
-  patch -p1 -i ../0001-Remove-accountsservice-dependency.patch
-  patch -p1 -i ../0002-Add-gnome-settings-daemon-3.12-rfkill-plugin.patch
-  patch -p1 -i ../0003-Use-GNOME-3.16-deprecated-schemas.patch
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
+  
+    patch -p1 -i ${srcdir}/0001-Remove-accountsservice-dependency.patch
+    patch -p1 -i ${srcdir}/0002-Add-gnome-settings-daemon-3.12-rfkill-plugin.patch
+    patch -p1 -i ${srcdir}/0003-Remove-gsdscreensaver-undefined-refs.patch
 
   # Temporarily disable since it fails to link to glib
   sed -i '/noinst_PROGRAMS += test-wm-button-layout-translations/d' plugins/xsettings/Makefile.am
 }
 
 build() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
 
   autoreconf -vfi
   intltoolize -f
 
+  unset CFLAGS
+  unset CXXFLAGS
   ./configure \
     --prefix=/usr \
     --sysconfdir=/etc \
@@ -63,7 +69,9 @@ build() {
 }
 
 package() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
   make DESTDIR="${pkgdir}/" install
 
   install -dm755 "${pkgdir}/usr/bin/"

@@ -1,15 +1,15 @@
 # Maintainer: Michael Healy <horsemanoffaith@gmail.com>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname}, repo=xenial
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
 # vercheck-launchpad: name=${pkgname}
 
 pkgname=unity-api
-_actual_ver=7.105
-_extra_ver=+16.04.20160104
+_actual_ver=7.115
+_extra_ver=+16.10.20160614
 _ubuntu_ver=0ubuntu1
 pkgver=${_actual_ver}${_extra_ver/\+/.}
-pkgrel=1
+pkgrel=2
 pkgdesc="Contains API's for integration with various Unity features"
 arch=(i686 x86_64)
 url="https://launchpad.net/unity-api"
@@ -17,33 +17,45 @@ license=(LGPL)
 makedepends=(cmake glib2 pkg-config python3 qt5-base qt5-declarative boost doxygen graphviz clang cppcheck valgrind gtest)
 groups=(unity)
 source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity-api_${_actual_ver}${_extra_ver}.orig.tar.gz"
-        "https://launchpad.net/ubuntu/+archive/primary/+files/unity-api_${_actual_ver}${_extra_ver}-${_ubuntu_ver}.diff.gz")
-sha512sums=('8d9f5e06b1573c6ada39deb33c32fd8dfb5ef1eed748f492303ec8a62e6ce4e37afd83d9a8ffdaecb89da42848e4c1c8f13ef2a418680b441bc7ab48194f7cb5'
-            '1de41957895b78017fe686a71ec310f005444a75b03987d8e1983257e1fa8153db103e553008abda99bf681c15c14ac5ebca1af1b010027e394a4916a51de1c6')
+        "https://launchpad.net/ubuntu/+archive/primary/+files/unity-api_${_actual_ver}${_extra_ver}-${_ubuntu_ver}.diff.gz"
+0001-temporary-fix-MockFiltersModel-constructor.patch)
+sha512sums=('a0c7ea2a62c2b019fabdd3b7e252b9a9b55f2f1a89dfdb8ec332b10826ea4b0a67de3e5be32056ceb82b5a499d9b1a9553a23615e3750845c979cad7eeade074'
+            'a30109701226b8bbcc7b26c1bb66a4051fe22c8aefdd1ea3ba4e44511e8fe1565ff9ab7fe238020b7245ce22bdc43b6094ade69558d459fd2ffe478117ac0e1c'
+            '99412f9ffee70b64745c280a2b8115f2324c39b059c61883a18171d7bcd5200c07d4b27462b4ffb3e4ce79800823f07b7e25719ce14ca8fc14d55576be3afd69')
 
 prepare() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
+
+  patch -p1 -i ../0001-temporary-fix-MockFiltersModel-constructor.patch
 
 }
 
 build() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
 
   export CFLAGS+=" -Wno-error"
-
-  mkdir build
+  mkdir -p build
   cd build
   cmake .. \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_INSTALL_LIBDIR=/usr/lib \
     -DCMAKE_INSTALL_LIBEXECDIR=/usr/lib \
-    -Denable_tests=OFF
+    -Denable_tests=OFF \
+    -Duse_pch=FALSE
 
-  make
+  make 
 }
 
 package() {
-  cd "${pkgname}-${_actual_ver}${_extra_ver}/build/"
+  if [ -d "${pkgname}-${_actual_ver}${_extra_ver}" ]; then
+    cd "${pkgname}-${_actual_ver}${_extra_ver}"
+  fi
+  
+  cd build
 
   make DESTDIR="${pkgdir}/" install
 }

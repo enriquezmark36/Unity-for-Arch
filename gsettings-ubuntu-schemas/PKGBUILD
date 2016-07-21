@@ -1,0 +1,38 @@
+# Maintainer: ME <enriquezmark36@gmail.com>
+
+_ubuntu_rel=0ubuntu1
+_extra_ver=+16.10.20160615.1
+_srcname=gsettings-ubuntu-touch-schemas
+
+pkgname=gsettings-ubuntu-schemas
+pkgver=0.0.7
+pkgrel=1
+pkgdesc="GSettings deskop-wide schemas for Ubuntu"
+arch=(any)
+url="https://launchpad.net/gsettings-ubuntu-touch-schemas"
+license=(LGPL)
+depends=(glib2)
+install='gsettings-ubuntu-schemas.install'
+group=(unity)
+makedepends=(intltool gobject-introspection)
+provides=("${pkgname%-*}=${pkgver}")
+conflicts=("${pkgname%-*}")
+#install=${pkgname%-*}.install
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/${_srcname}_${pkgver}${_extra_ver}.orig.tar.gz")
+sha512sums=('782ff77119c00a0c4ff066187a55c4fc0484035efea29a6c5d7904923acebd5dd04c45f7cf29ad1a7b9d1facb015b9177cb627f1c864e9917bbfc0b6c9c68645')
+
+build() {
+  if [ -d ${_srcname}-${pkgver}${_extra_ver} ]; then
+    cd "${_srcname}-${pkgver}${_extra_ver}"
+  fi
+  ./autogen.sh --prefix=/usr
+  make
+}
+
+package() {
+  if [ -d ${_srcname}-${pkgver}${_extra_ver} ]; then
+    cd "${_srcname}-${pkgver}${_extra_ver}"
+  fi
+
+  make DESTDIR="${pkgdir}" install
+}

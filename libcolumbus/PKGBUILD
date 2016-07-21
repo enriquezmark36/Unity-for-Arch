@@ -1,11 +1,11 @@
 # Maintainer: Michael Healy <horsemanoffaith@gmail.com>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname}, repo=xenial
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
 # vercheck-launchpad: name=${pkgname}
 
 pkgname=libcolumbus
-_ubuntu_rel=0ubuntu4
+_ubuntu_rel=0ubuntu5
 _actual_ver=1.1.0
 _extra_ver=+15.10.20150806
 pkgver=${_actual_ver}${_extra_ver}

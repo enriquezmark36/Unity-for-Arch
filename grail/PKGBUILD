@@ -2,12 +2,12 @@
 # Contributor: thn81 <root@scrat>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgname}, repo=xenial
+# vercheck-ubuntu: name=${pkgname}, repo=yakkety
 # vercheck-launchpad: name=${pkgname}
 
 pkgname=grail
-_actual_ver=3.1.0
-_extra_ver=+16.04.20160125
+_actual_ver=3.1.1
+_extra_ver=
 pkgver=${_actual_ver}.${_extra_ver}
 pkgrel=1
 pkgdesc="Gesture Recognition And Instantiation Library"
@@ -16,8 +16,8 @@ url="https://launchpad.net/grail"
 license=(LGPL)
 depends=(frame libxfixes libxi)
 makedepends=(inputproto)
-source=("https://launchpad.net/ubuntu/+archive/primary/+files/grail_${_actual_ver}${_extra_ver}.orig.tar.gz")
-sha512sums=('b54f6681e128a1cf79e1fa74452d4aa674a3eaa5ce3d46386760382c5b754a582022a43b516149fa4f7fc68397c6d80b852550c9ed04e9bdae06ae0713a9de4d')
+source=("https://launchpad.net/grail/trunk/${_actual_ver}/+download/grail-${_actual_ver}.tar.bz2")
+sha512sums=('1e26b784287a480041932b2e37576b5e9142570cdae7870f021e55bbd626784720af8601a8e52c38f56097bceb91a6f8d34abf099f31fd92d283e67b6f3da7ad')
 
 build() {
   cd "${pkgname}-${_actual_ver}${_extra_ver}"

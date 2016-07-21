@@ -6,31 +6,33 @@
 # Contributor: Will Rea <sillywilly@gmail.com>
 
 # vercheck-pkgbuild: auto
-# vercheck-ubuntu: name=${pkgbase%-*}, repo=xenial
+# vercheck-ubuntu: name=${pkgbase%-*}, repo=yakkety
 # vercheck-archlinux: name=${pkgbase%-*}, repo=extra, arch=x86_64
 # vercheck-gnome: name=${pkgbase%-*}, majorver=1.0
 
 pkgbase=network-manager-applet-ubuntu
 pkgname=(network-manager-applet-ubuntu libnm-gtk-ubuntu)
-_ubuntu_rel=1ubuntu1
-pkgver=1.0.10
-pkgrel=2
+_ubuntu_rel=0ubuntu1
+_ubuntu_ver=1.2.2
+pkgver=1.2.2
+pkgrel=1
 pkgdesc="Applet for managing network connections"
 arch=(i686 x86_64)
 url="http://www.gnome.org/projects/NetworkManager/"
 license=(GPL LGPL2.1)
 makedepends=(libnm-glib libsecret gtk3-ubuntu gnome-icon-theme
-             mobile-broadband-provider-info iso-codes libnotify libmm-glib
-             intltool gobject-introspection libappindicator-gtk3-ubuntu python2)
+             mobile-broadband-provider-info iso-codes libnotify libmm-glib 
+             intltool gobject-introspection python2)
 extrafiles=(network-manager-applet.install)
 source=("http://ftp.gnome.org/pub/GNOME/sources/${pkgbase%-*}/${pkgver%.*}/${pkgbase%-*}-${pkgver}.tar.xz"
         "https://launchpad.net/ubuntu/+archive/primary/+files/${pkgbase%-*}_${_ubuntu_ver:-${pkgver}}-${_ubuntu_rel}.debian.tar.xz")
-sha512sums=('dc13881243e5232d0c45563442f906a93c4d196a69c52c45d335f755bbc73c4d3131ba59180a102f65ca2066d40127b9db8cf85da2b41ec18efda482a9d210aa'
-            '0500eb1cb771e48ee04fa736397f0d98c5642f34a290b80d46349046bf3e1f55d42b0a0a2e3cbefca78236ec285ecf6585db69a3750c3c9366cead54220ce4b7')
+sha512sums=('1a763acc045b56f56d1faba17ec1523969f9b202a611bef7a52a55c3658a29acf6e9eeee1666274e09b5dbfe2895afc728f119da2a8edca0f11de55c42e1e382'
+            '4d0be9c20476a000f9bc4ea57eebacd1526ab70f93ebd4fa1d24fdbc51fab251eb8450559ffe628663ad11075577b6de8e678dbdfe30222c1cc4509e4e3c3d2f')
 
 prepare() {
-  cd "${pkgbase%-*}-${pkgver}"
-
+  if [ -d "${pkgbase%-*}-${pkgver}" ]; then
+    cd "${pkgbase%-*}-${pkgver}"
+  fi
   # Apply Ubuntu's patches
 
   sed -i -e '/key-certificate-extensions.patch/d' \
@@ -50,7 +52,9 @@ prepare() {
 }
 
 build() {
-  cd "${srcdir}/${pkgbase%-*}-${pkgver}"
+  if [ -d "${pkgbase%-*}-${pkgver}" ]; then
+    cd "${pkgbase%-*}-${pkgver}"
+  fi
 
   autoreconf -vfi
 
@@ -60,29 +64,34 @@ build() {
     --localstatedir=/var \
     --libexecdir=/usr/lib/networkmanager \
     --disable-static \
+    --disable-more-warnings \
     --disable-maintainer-mode \
-    --disable-migration \
-    --enable-indicator \
-    --with-modem-manager-1
+    --with-appindicator \
+    --with-wwan
 
   # https://bugzilla.gnome.org/show_bug.cgi?id=655517
   sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
 
-  make -j1
+  make 
 }
 
 check() {
-  cd "${pkgbase%-*}-${pkgver}"
+  if [ -d "${pkgbase%-*}-${pkgver}" ]; then
+    cd "${pkgbase%-*}-${pkgver}"
+  fi
   make -k check
 }
 
 package_network-manager-applet-ubuntu() {
-  depends=(libnm-gtk-ubuntu libmm-glib libnotify libsecret libappindicator-gtk3-ubuntu)
+  depends=(libnm-gtk-ubuntu libmm-glib libnotify libsecret 
+	   'networkmanager>=1.1' 'libnm-glib>=1.1')
   install=network-manager-applet.install
-  provides=("network-manager-applet=${pkgver}")
+  provides=("network-manager-applet=${pkgver}" nm-connection-editor)
   conflicts=(network-manager-applet)
 
-  cd "${pkgbase%-*}-${pkgver}"
+  if [ -d "${pkgbase%-*}-${pkgver}" ]; then
+    cd "${pkgbase%-*}-${pkgver}"
+  fi
   make DESTDIR="${pkgdir}" install
   make DESTDIR="${pkgdir}" -C src/libnm-gtk uninstall
 

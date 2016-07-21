@@ -1,0 +1,12 @@
+diff -Nur a/test/qmltest/mocks/plugins/Unity/Scopes/Mocks/MockFiltersModel.cpp b/test/qmltest/mocks/plugins/Unity/Scopes/Mocks/MockFiltersModel.cpp
+--- a/test/qmltest/mocks/plugins/Unity/Scopes/Mocks/MockFiltersModel.cpp	2016-06-14 16:33:24.000000000 +0800
++++ b/test/qmltest/mocks/plugins/Unity/Scopes/Mocks/MockFiltersModel.cpp	2016-07-15 11:49:47.063785985 +0800
+@@ -20,7 +20,7 @@
+ MockFiltersModel::MockFiltersModel(unity::shell::scopes::ScopeInterface *parent)
+     : unity::shell::scopes::FiltersInterface(parent)
+ {
+-    MockOptionSelectorFilter *f = new MockOptionSelectorFilter("f1", "Filter 1", false, this);
++    MockOptionSelectorFilter *f = new MockOptionSelectorFilter("f1", "Filter 1", "", false, this);
+     m_filters.append(f); // owned by parent, so no need to manage it
+ }
+ 

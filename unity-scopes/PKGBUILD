@@ -1,6 +1,6 @@
 # Maintainer: Michael Healy <horsemanoffaith@gmail.com>
 
-# vercheck-ubuntudb: pkgprefix=unity-scope-, verprefix=_ver_, relprefix=_rel_, skip=home, repo=wily
+# vercheck-ubuntudb: pkgprefix=unity-scope-, verprefix=_ver_, relprefix=_rel_, skip=home, repo=yakkety
 
 # When updating, check if any packages are missing when compared to
 # /usr/share/unity/client-scopes.json
@@ -17,18 +17,20 @@ setver devhelp			0.1+14.04.20140328	0ubuntu1
 setver deviantart		0.1+13.10.20130723	0ubuntu1
 setver firefoxbookmarks		0.1+13.10.20130809.1	0ubuntu1
 setver gallica			0.1+13.10.20130816.2	0ubuntu1
-setver gdrive			0.9+13.10.20130723	0ubuntu1
+setver gdrive			0.9+16.04.20151125	0ubuntu1
 setver github			0.1+13.10.20130723	0ubuntu1
 setver googlenews		0.1+13.10.20130723	0ubuntu1
 setver gourmet			0.1+13.10.20130723	0ubuntu1
-setver guayadeque		0.1+13.10.20130927.1	0ubuntu1
 setver manpages			3.0+14.04.20140324	0ubuntu1
 setver musique			0.1+13.10.20130723	0ubuntu1
 setver openclipart		0.1+13.10.20130723	0ubuntu1
 setver openweathermap		0.1+13.10.20130828	0ubuntu1
+#setver scopes			0.1+14.10.20140820	0ubuntu2~gcc5.2
 setver soundcloud		0.1+13.10.20130723	0ubuntu1
+setver sshsearch		0.1daily13.06.05	0ubuntu1
 setver texdoc			0.1+14.04.20140328	0ubuntu1
 setver tomboy			0.1+13.10.20130723	0ubuntu1
+#setver video-remote		0.3.15+16.04.20160212	0ubuntu1
 setver virtualbox		0.1+13.10.20130723	0ubuntu1
 setver yahoostock		0.1+13.10.20130723	0ubuntu1
 setver yelp			0.1+13.10.20130723	0ubuntu1
@@ -36,13 +38,12 @@ setver zotero			0.1+13.10.20130723	0ubuntu1
 
 pkgname=unity-scopes
 pkgver=1.0
-pkgrel=12
+pkgrel=13
 pkgdesc="Online scopes for the Unity Dash"
 arch=(any)
 url="https://launchpad.net/unity-scope-NAME"
 license=(GPL custom)
 groups=(unity)
-
 depends=(dee glib2 libunity python python-gobject unity-scope-home
          hicolor-icon-theme)
 # audacious, clementine, gmusicbrowser, guayadeque, musique
@@ -87,6 +88,8 @@ prepare() {
   done
 }
 
+
+
 package() {
   install -dm755 "${pkgdir}/usr/share/doc/unity-scopes/"
 
@@ -124,16 +127,14 @@ sha512sums=('3c19ded6c9a5c63b996a4da37afc93200d6e72906062ce94558fdf3c7aba74975c5
             'a1144f8da5e535c73cd80b408a9695cbe1dd668cc9679ba7c06564575b885ba066f032eb9c7c5763ff313897b0fa51ad0fb8ed0359ebce26751fab3ab592e700'
             '26bbb2f65e93f05fa30338823ede708642a2a5e13cb3769789b33f8a40c08c605c5db2ad9777ab804834ce12d25fe53da82e77ba3f045c4dbedf5092a44eb8c0'
             '3d61f2852b40c7d6435024b46be64469ca4333d2158e8ca82bfc8e8be88976ecf020b581278ad88444b0fa89f51bd3354528dca70214a0f58116f69b576130f3'
-            '2c6aa825e7f9f549086dd577445ac05ef950aac1867bd525d62343cb2b84c0d0598983256e17b3c3e92d22b86661319f86be98a5eeecf359c046eaea869ec48f'
-            '70bb1cbd9edd25e5915dfcc56b01a74e66a36e07478df1254ddd55819c65276ff3f61d5752108d85ca6747efeddfae07c83cf6f6203fbd806a4f6bd16ede0fee'
+            '7fcc3938d3ba0533bf41e24466e8a8181f3f76ed502d41e3b40d821465c0970f0bd1835da3b73dd79947bc22d740604f3667c88346193fca6cd2f3cc6361a8f4'
+            'f7a75ea1a456ab24a762559395e269a32870f817c709854015a06f42d74f2a1f0159336da7e11f36e113c60701dff07dc264a8447e177d3b010e3a120d1c9c20'
             '396dc337c8934a1d99ce2ed02568d1cad559d852bbbd7548acdf2ed3417848565127682a63745c46bcddd0aaa4fa9f10a85650d2651bfac2171c676427d7080e'
             'cb8e890d92d56ab41905f8704fcc3369c8afb08e702be2f5b43307024d3a03dcc5de9a69e2168d1f4f3409eb64a2f16970ac905379bda54c7bdffc821a1e0c0e'
             'c585ff7c25adb0b151869b9f04deb2ca13e698b3604bbdb852d5011aa57dedada581d989090024bc57fb6dfb705ac9c314319ad2ec7250d5ff42197b4f8182ff'
             'dafc1c91aeb938039301ffe6ab1f6d03fcde5d83aae26e6f4e276a299177468af1388844fad1e34b5b9860595a3c2c242a5df3e3b3cb8f59bea044fba69965fa'
             '876f3fbe29990aec29990d6de4e35685eb5e0178e0d5c87dc8d090e84085fc52285534755d57ca3b357f45051ed761873386073fcd54c5a0f47492d2ceb77a10'
             '59dad9a5e76284badc1fd08458793d0fb2dc5f63abcad9410e5a71c4f25d1754cf5eb411ed270d32bf87f60f2f06ada098172dc069742a5a3ce76c255321e2ba'
-            '8d20ead737d0aa2d74e7dfa0e500f9d6cbf8963bcd70ced1c232edb0d21ce35742347f2a66a0d9293a0973dc22d57d4edb17bd0dc6245175897033d4906f4277'
-            '54862c1035fc811b8b96fe8cdd1699177734177cbe2268dfa4897e9bb92797969da3aa5c5f7ab3cc64e0d156163c20dfd4aaeca6901b436844b8b6a431c22902'
             '3efffc0f4342684fdca1cae10d82d80dbd0b9122cc501547bf95722e6a35b0b3b5afb7b575f78fb3ebe853549acc3fbcd7aaf6688e50a8e461d7602f649809c3'
             '4f66a238cb9bb449772e4119fb9c49fe6b47e1f775739803097abe208c80839dee33fa3bf53c86c2fff4b43d4e9fef2cf9887673c2e7119ff5c06c39699cc5b0'
             '8b18e41449ba3e04a704be23cf4e06dd67d5c4d741a7e66169da6978b8e3fcaf4a44c3c11d9a442a7803397e6abd8323046fe03447ac664fc05b51819585e6e1'
@@ -144,6 +145,8 @@ sha512sums=('3c19ded6c9a5c63b996a4da37afc93200d6e72906062ce94558fdf3c7aba74975c5
             '4abe87b22d1949653bf1551ac6ef164d7ba9c7b7defbc8204df9429823ba8dbb99979b097509e945a68832d7be4313f3412cf574f2627b8532761ae65196860e'
             '27fa1bf7e1b3058a7515f670c146241d7141f763b18dba6c63eb0b610205b8380c2a03e58a22c7a1fa043458e929550aa78cd36e2d343087e65ab588505a89ef'
             'c9129b470fc8593727dfed90a2d4cff5f108937b69d4e55cd77ec746d10369637d6b195204a5073011bb118c4b3ac25fc5c0b27965484ec3201fa12de3efb6b4'
+            'e61de0a590371da5a8489b96bfa3779f8271151c1552d3637fc323812b59fccb923c6ab931a2cf86851168535eeff15e60fe3275749f30a3f152177f598f9a10'
+            '2869a9dfcbc49cf7aeee0b8315768fb8f6613a756d28ccb6b276ecb775c070cf6c84bd483cf3d67747f445fd04a666ae81ed12475cb07b59622c480a4e5d47ad'
             '1f1d1d22adb7e8ff49093fbad7f2cdea17b82816ff1db5c2da6331e9adf00ae152c03be5d6efa7cc804b5e24728b854a2e3f80cd2dc69dadeaafc2e3cd45462d'
             '1cfdede82884298583c4ffa57c0a22fd073e53d754ccd97ec69011d06cc03e34537b281ad35370e1959f0ce195cb7b988a8d80dad297c0a86f8dceec55506837'
             'be51db15c59a6fdd57fbe7f7cc7c6e9bfb2fee75ae32a092970dfba9367487b8420df493759808db755de34fe49064e517a9dcdef9fdae4359b37a1203d85c56'
@@ -156,3 +159,5 @@ sha512sums=('3c19ded6c9a5c63b996a4da37afc93200d6e72906062ce94558fdf3c7aba74975c5
             'b622e020e84e7049d756b6adb64d85fbdc9d0078bccca11e4bd63c0dde225525afc4f52cc52ccfe84d464bfc01a3ddda4ab5a0b3821bd6ca62565a85f8bb10a6'
             '4f8f25a8ca4caf4a2772ce4f5949c480146930bc21233c203a9eb7f6e7fde81821d7cbe8b18b23d47506e8a5767e9e1fab1f97c37305a29b6f7cfcf57920aa16'
             '84b783800999ad58c693b71e88adaab4034e18fcbd2f593e1082523d39c1f2d853bd9d64033e16ff6c27d95d0e619cd1725ed4fa3c3fb5a3a85ef8b4a4818847')
+
+

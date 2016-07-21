@@ -1,0 +1,14 @@
+diff -Nur a/plugins/screensaver-proxy/gsd-screensaver-proxy-manager.c b/plugins/screensaver-proxy/gsd-screensaver-proxy-manager.c
+--- a/plugins/screensaver-proxy/gsd-screensaver-proxy-manager.c	2016-06-15 23:54:38.000000000 +0800
++++ b/plugins/screensaver-proxy/gsd-screensaver-proxy-manager.c	2016-07-15 16:45:29.783250257 +0800
+@@ -267,10 +267,6 @@
+                          * value if the activation process is still ongoing. */
+                         ret = g_variant_ref (parameters);
+                 }
+-        } else if (g_strcmp0 (method_name, "GetSessionIdleTime") == 0) {
+-                GsdIdleMonitor *idle_monitor = gsd_idle_monitor_get_core ();
+-                gint64 idle_time_ms = gsd_idle_monitor_get_idletime (idle_monitor);
+-                ret = g_variant_new ("(u)", idle_time_ms / 1000);
+         } else {
+                 goto unimplemented;
+         }

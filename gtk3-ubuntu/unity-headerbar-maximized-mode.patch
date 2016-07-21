@@ -1,0 +1,130 @@
+diff -Nur a/gtk/gtkheaderbar.c b/gtk/gtkheaderbar.c
+--- a/gtk/gtkheaderbar.c	2016-03-26 02:46:38.000000000 +0000
++++ b/gtk/gtkheaderbar.c	2016-04-23 23:04:14.770036431 +0000
+@@ -34,6 +34,10 @@
+ 
+ #include <string.h>
+ 
++#ifdef GDK_WINDOWING_X11
++#include "x11/gdkx.h"
++#endif
++
+ /**
+  * SECTION:gtkheaderbar
+  * @Short_description: A box with a centered child
+@@ -68,6 +72,7 @@
+   GtkWidget *custom_title;
+   gint spacing;
+   gboolean has_subtitle;
++  gboolean unity_environment;
+ 
+   GList *children;
+ 
+@@ -262,6 +267,36 @@
+     gtk_widget_set_visible (priv->titlebar_end_separator, have_visible_at_end);
+ }
+ 
++static void
++check_title_visibility (GtkHeaderBar *bar)
++{
++  GtkHeaderBarPrivate *priv = gtk_header_bar_get_instance_private (bar);
++  gboolean visible = TRUE;
++
++  if (!priv->title_label)
++    return;
++
++
++  if (priv->unity_environment)
++    {
++      GtkWidget *widget = GTK_WIDGET (bar);
++      GtkWidget *toplevel = gtk_widget_get_toplevel (widget);
++
++      if (GTK_IS_WINDOW (toplevel))
++        {
++          GtkWindow *window = GTK_WINDOW (toplevel);
++
++          if (gtk_window_is_maximized (window) &&
++              gtk_window_get_titlebar (window) == widget)
++            {
++              visible = FALSE;
++            }
++        }
++    }
++
++  gtk_widget_set_visible (priv->title_label, visible);
++}
++
+ void
+ _gtk_header_bar_update_window_buttons (GtkHeaderBar *bar)
+ {
+@@ -294,6 +329,20 @@
+     }
+ 
+   priv->titlebar_icon = NULL;
++  window = GTK_WINDOW (gtk_widget_get_toplevel (widget));
++
++  if (priv->unity_environment)
++    {
++      check_title_visibility (bar);
++
++      if (gtk_window_is_maximized (window))
++        {
++          gtk_style_context_add_class (gtk_widget_get_style_context (widget), "toolbar-mode");
++          return;
++        }
++
++      gtk_style_context_remove_class (gtk_widget_get_style_context (widget), "toolbar-mode");
++    }
+ 
+   if (!priv->shows_wm_decorations)
+     return;
+@@ -311,8 +360,6 @@
+       layout_desc = g_strdup (priv->decoration_layout);
+     }
+ 
+-  window = GTK_WINDOW (toplevel);
+-
+   if (!shown_by_shell && gtk_window_get_application (window))
+     menu = gtk_application_get_app_menu (gtk_window_get_application (window));
+   else
+@@ -568,6 +615,8 @@
+                                       &priv->subtitle_label);
+   gtk_header_bar_reorder_css_node (bar, GTK_PACK_START, priv->label_box);
+   gtk_widget_set_parent (priv->label_box, GTK_WIDGET (bar));
++
++  check_title_visibility (bar);
+ }
+ 
+ static gint
+@@ -1815,6 +1864,22 @@
+ 
+   GTK_WIDGET_CLASS (gtk_header_bar_parent_class)->realize (widget);
+ 
++#ifdef GDK_WINDOWING_X11
++  GtkHeaderBar *bar;
++  GtkHeaderBarPrivate *priv;
++  GdkScreen *screen;
++
++  bar = GTK_HEADER_BAR (widget);
++  priv = gtk_header_bar_get_instance_private (bar);
++  screen = gtk_widget_get_screen (widget);
++
++  if (GDK_IS_X11_SCREEN (screen))
++    {
++      GdkAtom unity_atom = gdk_atom_intern_static_string ("_UNITY_SHELL");
++      priv->unity_environment = gdk_x11_screen_supports_net_wm_hint (screen, unity_atom);
++    }
++#endif
++
+   settings = gtk_widget_get_settings (widget);
+   g_signal_connect_swapped (settings, "notify::gtk-shell-shows-app-menu",
+                             G_CALLBACK (_gtk_header_bar_update_window_buttons), widget);
+@@ -1865,6 +1930,8 @@
+     g_signal_connect_after (toplevel, "window-state-event",
+                             G_CALLBACK (window_state_changed), widget);
+ 
++  check_title_visibility (GTK_HEADER_BAR (widget));
++
+   _gtk_header_bar_update_window_buttons (bar);
+ }
+ 
