@@ -6,9 +6,9 @@
 # vercheck-gnome: name=gtk+, majorver=2.24
 
 pkgname=gtk2-ubuntu
-_ubuntu_rel=1ubuntu1
+_ubuntu_rel=4ubuntu1
 pkgver=2.24.30
-pkgrel=1
+pkgrel=2
 pkgdesc="GTK+ is a multi-platform toolkit (v2)"
 arch=(i686 x86_64)
 url="http://www.gtk.org/"
@@ -91,3 +91,7 @@ package() {
   # Use the official gtk-update-icon-cache package
   rm -v "${pkgdir}/usr/bin/gtk-update-icon-cache"
 }
+sha512sums=('13373e4809b48acefdbf09f18f0f18b562f05b3ce2e3169c5aa80722a262405b3b4a220ecee54c59ef03ef89be9850dc659f6da9251abaf7c577599b7a4319b1'
+            '67d75c8b16cff524d7a2a9ce97a14f91a127b6bfbe7006f7b23037bc7a7224f2797a26909409522b839fdb0d67073998336a9f92ff755a72718b987d71f12c3a'
+            'fb18f1937b117f97da1650fda2561e231cb5da108a9c04f3b27c19205843ea16402b52d9693eca63a8464bdfb1e6a0aedf81958ee3de75ce12aca4cce078bf23'
+            '89e3223c86731a76b12d39245f1ec4cf8b4860ab1d11d74a10e5deb0db302f20b4bb5d9034da1d8aeb96369dbdeddcdd2f28943270dc501476c694562b960159')
