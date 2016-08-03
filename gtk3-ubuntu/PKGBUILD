@@ -11,12 +11,11 @@ _use_ppa=false
 
 pkgname=gtk3-ubuntu
 _ppa_rel=0ubuntu1~yakkety1
-_ubuntu_rel=1ubuntu4
-_ubuntu_ver=3.18.9
+_ubuntu_rel=1ubuntu1
+_ubuntu_ver=3.20.6
 #pkgver=3.18.9
-#Gtk+ 3.20 is terrible for unity (period)
 pkgver=3.20.6
-pkgrel=3
+pkgrel=4
 pkgdesc="GObject-based multi-platform toolkit (v3)"
 arch=(i686 x86_64)
 url="http://www.gtk.org/"
@@ -36,7 +35,7 @@ sha512sums=('597d25ec00f83c6ac77784f303458fad03d8ad017a53ee59e067fda61fa79fe6f34
 '565d6f714905d130ab18151602359ee3d995f926f4434b3bb8b99d7c358e612d9f0bfbb2acf1dc3b68b718764e8f33865f3f2f7f978d7fd3a8ef49a828a0f2d8')
 if [[ "${_use_ppa}" != "true" ]]; then
   source+=("https://launchpad.net/ubuntu/+archive/primary/+files/gtk+3.0_${_ubuntu_ver:-${pkgver}}-${_ubuntu_rel}.debian.tar.xz")
-  sha512sums+=('c4f59b9221b5b36f688b83fb44fcbd00deed21387d5c582073c992e40bf1ffb8de0e1b3b0c29ccbbf9fff5b52653d653e6e18dc08bb015d8963581bd2d19a74f')
+  sha512sums+=('f178621894f58b33e06c392f163dadc9c08a8a0f6559009101b854187e7133032d5ee96ed64363fe19744a37d182a628051d8c67a884f44581e9d30310792b22')
 else 
   source+=("http://ppa.launchpad.net/gnome3-team/gnome3-staging/ubuntu/pool/main/g/gtk+3.0/gtk+3.0_${_ppa_ver:-${pkgver}}-${_ppa_rel}.debian.tar.xz")
   sha512sums+=('858ae4cca4382aad2031d2cf25f89f41f7258f16a98078c1a74f99d0d9600b6eaa51bebfc46b76bbdf5ca08508e8b4aa3653b194c556f59f3f04f1ae819e3036')
